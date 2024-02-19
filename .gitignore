@@ -1,5 +1,5 @@
 # compiled output
-/dist
+# /dist //commented to enable github reading it
 /node_modules
 
 # Logs

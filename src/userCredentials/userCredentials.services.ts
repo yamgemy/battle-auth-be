@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { UserLoginDto } from './dto/user-login.dto';
-import { UserCredentials } from './schemas/userCredentials.schema';
+import { Model, Types } from 'mongoose';
+import { AuthUserDto } from './dto/auth-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  UserCredentials,
+  UserDocument,
+} from './schemas/userCredentials.schema';
 
 @Injectable()
 export class UserCredentialsService {
@@ -11,15 +15,27 @@ export class UserCredentialsService {
     private credsModel: Model<UserCredentials>,
   ) {}
 
-  //it returns a promise
-  getAllUsersCreds() {
+  //returns a promise
+  async getAllUsersCreds(): Promise<UserDocument[]> {
     return this.credsModel.find().exec();
   }
 
   //returns a promise
-  findUserByCreds(userLoginDto: UserLoginDto) {
+  async findUserByCreds(userLoginDto: AuthUserDto): Promise<UserDocument> {
+    return (
+      this.credsModel
+        .findOne({ login_name: userLoginDto.login_name }) //findone returns document or null
+        //.find({ login_name: userLoginDto.login_name }, { password: 1 }) //returns array
+        .exec()
+    );
+  }
+
+  async update(
+    id: Types.ObjectId | string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserDocument> {
     return this.credsModel
-      .find({ login_name: userLoginDto.login_name }, { password: 1 })
+      .findByIdAndUpdate(id, updateUserDto, { new: true })
       .exec();
   }
 }

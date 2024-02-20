@@ -3,12 +3,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { UserCredentialsModule } from './userCredentials/userCredentials.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), //must be first import
-    UserCredentialsModule,
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -16,6 +16,8 @@ import { UserCredentialsModule } from './userCredentials/userCredentials.module'
         uri: config.get<string>('DATABASE_URL'), // Loaded from .env
       }),
     }),
+    UserCredentialsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

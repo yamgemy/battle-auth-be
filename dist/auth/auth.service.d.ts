@@ -22,15 +22,21 @@
 /// <reference types="mongoose/types/validation" />
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
-import { HydratedDocument } from 'mongoose';
-export type UserDocument = HydratedDocument<UserCredentials>;
-export declare class UserCredentials {
-    login_name: string;
-    password: string;
-    refreshToken: string;
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { Types } from 'mongoose';
+import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
+import { AuthDto } from './dto/auth.dto';
+export declare class AuthService {
+    private configService;
+    private jwtService;
+    private userCredentialsService;
+    constructor(configService: ConfigService, jwtService: JwtService, userCredentialsService: UserCredentialsService);
+    signIn(authDto: AuthDto): Promise<Record<string, string | number>>;
+    hashData(data: string): Promise<string>;
+    updateRefreshToken(userId: Types.ObjectId, refreshToken: string): Promise<void>;
+    getTokens(userId: Types.ObjectId, username: string): Promise<{
+        accessToken: string;
+        refreshToken: string;
+    }>;
 }
-export declare const UserCredentialsSchema: import("mongoose").Schema<UserCredentials, import("mongoose").Model<UserCredentials, any, any, any, import("mongoose").Document<unknown, any, UserCredentials> & UserCredentials & {
-    _id: import("mongoose").Types.ObjectId;
-}, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, UserCredentials, import("mongoose").Document<unknown, {}, import("mongoose").FlatRecord<UserCredentials>> & import("mongoose").FlatRecord<UserCredentials> & {
-    _id: import("mongoose").Types.ObjectId;
-}>;

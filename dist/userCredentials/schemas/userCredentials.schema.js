@@ -22,6 +22,10 @@ __decorate([
     (0, mongoose_1.Prop)({ required: true }),
     __metadata("design:type", String)
 ], UserCredentials.prototype, "password", void 0);
+__decorate([
+    (0, mongoose_1.Prop)(),
+    __metadata("design:type", String)
+], UserCredentials.prototype, "refreshToken", void 0);
 exports.UserCredentials = UserCredentials = __decorate([
     (0, mongoose_1.Schema)({ collection: 'userCredentials' })
 ], UserCredentials);

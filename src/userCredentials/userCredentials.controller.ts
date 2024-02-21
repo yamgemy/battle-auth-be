@@ -9,18 +9,20 @@ import { UserCredentialsService } from './userCredentials.services';
 export class UserCrendtialsController {
   constructor(private userCredentialsService: UserCredentialsService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard) //only affects incoming requests, not the delegated service
   @Get()
   async listAll(): Promise<UserCredentials[]> {
     const result = await this.userCredentialsService.getAllUsersCreds();
     return result;
   }
 
+  @UseGuards(AuthGuard) //only affects incoming requests, not the delegated service
   @Patch(':id')
   update(
     @Param('id') id: Types.ObjectId | string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
+    //this method is also used during sign in, where there is no token
     return this.userCredentialsService.update(id, updateUserDto);
   }
 }

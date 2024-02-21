@@ -16,9 +16,11 @@ exports.UserCredentialsService = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
+const auth_service_1 = require("../auth/auth.service");
 const userCredentials_schema_1 = require("./schemas/userCredentials.schema");
 let UserCredentialsService = class UserCredentialsService {
-    constructor(credsModel) {
+    constructor(authService, credsModel) {
+        this.authService = authService;
         this.credsModel = credsModel;
     }
     async getAllUsersCreds() {
@@ -30,15 +32,21 @@ let UserCredentialsService = class UserCredentialsService {
             .exec());
     }
     async update(id, updateUserDto) {
+        const hashedUpdateUserDto = Object.assign({}, updateUserDto);
+        if ('password' in updateUserDto) {
+            hashedUpdateUserDto.password = await this.authService.hashData(updateUserDto.password);
+        }
         return this.credsModel
-            .findByIdAndUpdate(id, updateUserDto, { new: true })
+            .findByIdAndUpdate(id, hashedUpdateUserDto, { new: true })
             .exec();
     }
 };
 exports.UserCredentialsService = UserCredentialsService;
 exports.UserCredentialsService = UserCredentialsService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)(userCredentials_schema_1.UserCredentials.name)),
-    __metadata("design:paramtypes", [mongoose_2.Model])
+    __param(0, (0, common_1.Inject)((0, common_1.forwardRef)(() => auth_service_1.AuthService))),
+    __param(1, (0, mongoose_1.InjectModel)(userCredentials_schema_1.UserCredentials.name)),
+    __metadata("design:paramtypes", [auth_service_1.AuthService,
+        mongoose_2.Model])
 ], UserCredentialsService);
 //# sourceMappingURL=userCredentials.services.js.map

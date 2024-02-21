@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AuthService } from 'src/auth/auth.service';
 import {
   UserCredentials,
   UserCredentialsSchema,
@@ -14,7 +16,16 @@ import { UserCredentialsService } from './userCredentials.services';
     ]),
   ],
   controllers: [UserCrendtialsController],
-  providers: [UserCredentialsService],
+  providers: [
+    UserCredentialsService,
+    AuthService,
+    JwtService,
+    // {
+    //   //adding these will apply to all calls in controllers
+    //   provide: APP_GUARD,
+    //   useClass: AuthGuard,
+    // },
+  ],
   exports: [UserCredentialsService], //wtf https://stackoverflow.com/questions/70906216/nest-cant-resolve-dependencies-of-the-authenticationservice
 })
 export class UserCredentialsModule {}

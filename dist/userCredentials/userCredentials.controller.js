@@ -38,6 +38,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserCrendtialsController.prototype, "listAll", null);
 __decorate([
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),

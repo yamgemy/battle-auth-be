@@ -45,6 +45,7 @@ let AuthService = class AuthService {
         if (user) {
             const passwordMatches = await argon2.verify(user.password, authDto.password);
             if (passwordMatches) {
+                response['user_objectId'] = user._id;
                 response[loginResultCodeKey] = 2;
                 response[loginResultKey] = 'username_and_password_match';
                 const tokens = await this.getTokens(user._id, user.login_name);

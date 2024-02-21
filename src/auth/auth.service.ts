@@ -16,6 +16,16 @@ export class AuthService {
 
   //TODO CREATE USER
 
+  async verifyAccessToken(token: string): Promise<object> {
+    const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
+    return await this.jwtService.verifyAsync(token, { secret: accessSecret });
+  }
+
+  async verifyRefreshToken(token: string): Promise<object> {
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
+  }
+
   /*
   signIn should return access and refreh tokens
   */
@@ -46,6 +56,7 @@ export class AuthService {
         authDto.password,
       );
       if (passwordMatches) {
+        response['user_objectId'] = user._id;
         response[loginResultCodeKey] = 2;
         response[loginResultKey] = 'username_and_password_match';
         const tokens = await this.getTokens(user._id, user.login_name);

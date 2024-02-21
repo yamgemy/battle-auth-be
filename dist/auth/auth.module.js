@@ -12,6 +12,7 @@ const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const userCredentials_module_1 = require("../userCredentials/userCredentials.module");
 const auth_controller_1 = require("./auth.controller");
+const auth_guard_1 = require("./auth.guard");
 const auth_service_1 = require("./auth.service");
 const accessToken_strategy_1 = require("./strategies/accessToken.strategy");
 const refreshToken_strategy_1 = require("./strategies/refreshToken.strategy");
@@ -22,7 +23,13 @@ exports.AuthModule = AuthModule = __decorate([
     (0, common_1.Module)({
         imports: [config_1.ConfigModule, jwt_1.JwtModule.register({}), userCredentials_module_1.UserCredentialsModule],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, accessToken_strategy_1.AccessTokenStrategy, refreshToken_strategy_1.RefreshTokenStrategy],
+        providers: [
+            auth_service_1.AuthService,
+            accessToken_strategy_1.AccessTokenStrategy,
+            refreshToken_strategy_1.RefreshTokenStrategy,
+            auth_guard_1.AuthGuard,
+        ],
+        exports: [auth_service_1.AuthService],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

@@ -23,12 +23,14 @@
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
 import { Model, Types } from 'mongoose';
+import { AuthService } from 'src/auth/auth.service';
 import { AuthUserDto } from './dto/auth-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserCredentials, UserDocument } from './schemas/userCredentials.schema';
 export declare class UserCredentialsService {
+    private authService;
     private credsModel;
-    constructor(credsModel: Model<UserCredentials>);
+    constructor(authService: AuthService, credsModel: Model<UserCredentials>);
     getAllUsersCreds(): Promise<UserDocument[]>;
     findUserByCreds(userLoginDto: AuthUserDto): Promise<UserDocument>;
     update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto): Promise<UserDocument>;

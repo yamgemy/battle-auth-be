@@ -34,4 +34,7 @@ export declare class UserCredentialsService {
     getAllUsersCreds(): Promise<UserDocument[]>;
     findUserByCreds(userLoginDto: AuthUserDto): Promise<UserDocument>;
     update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto): Promise<UserDocument>;
+    updateWithPasswordChange(id: Types.ObjectId | string, updateUserDto: UpdateUserDto): Promise<import("mongoose").Document<unknown, {}, UserCredentials> & UserCredentials & {
+        _id: Types.ObjectId;
+    }>;
 }

@@ -33,12 +33,27 @@ export class UserCredentialsService {
     );
   }
 
+  //this method is being used during signIn at AuthService `to update refresh token
   async update(
     id: Types.ObjectId | string,
     updateUserDto: UpdateUserDto, //can contain only 1 field from User
   ): Promise<UserDocument> {
+    if ('password' in updateUserDto) {
+      return this.updateWithPasswordChange(id, updateUserDto);
+    }
+    return this.credsModel
+      .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .exec();
+  }
+
+  async updateWithPasswordChange(
+    id: Types.ObjectId | string,
+    updateUserDto: UpdateUserDto, //can contain only 1 field from User
+  ) {
     const hashedUpdateUserDto = Object.assign({}, updateUserDto);
     if ('password' in updateUserDto) {
+      //TODO updating pw must also update refresh token
+      //TODO after refresh token updated on DB, send signal to all clients to logout (socket etc)
       hashedUpdateUserDto.password = await this.authService.hashData(
         updateUserDto.password,
       );

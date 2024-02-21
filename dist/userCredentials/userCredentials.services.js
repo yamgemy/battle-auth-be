@@ -32,6 +32,14 @@ let UserCredentialsService = class UserCredentialsService {
             .exec());
     }
     async update(id, updateUserDto) {
+        if ('password' in updateUserDto) {
+            return this.updateWithPasswordChange(id, updateUserDto);
+        }
+        return this.credsModel
+            .findByIdAndUpdate(id, updateUserDto, { new: true })
+            .exec();
+    }
+    async updateWithPasswordChange(id, updateUserDto) {
         const hashedUpdateUserDto = Object.assign({}, updateUserDto);
         if ('password' in updateUserDto) {
             hashedUpdateUserDto.password = await this.authService.hashData(updateUserDto.password);

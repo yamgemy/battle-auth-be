@@ -24,6 +24,7 @@ exports.UserCredentialsModule = UserCredentialsModule = __decorate([
         ],
         controllers: [userCredentials_controller_1.UserCrendtialsController],
         providers: [userCredentials_services_1.UserCredentialsService],
+        exports: [userCredentials_services_1.UserCredentialsService],
     })
 ], UserCredentialsModule);
 //# sourceMappingURL=userCredentials.module.js.map

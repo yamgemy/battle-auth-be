@@ -22,16 +22,14 @@
 /// <reference types="mongoose/types/validation" />
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
-import { Model } from 'mongoose';
-import { UserLoginDto } from './dto/user-login.dto';
-import { UserCredentials } from './schemas/userCredentials.schema';
+import { Model, Types } from 'mongoose';
+import { AuthUserDto } from './dto/auth-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserCredentials, UserDocument } from './schemas/userCredentials.schema';
 export declare class UserCredentialsService {
     private credsModel;
     constructor(credsModel: Model<UserCredentials>);
-    getAllUsersCreds(): Promise<(import("mongoose").Document<unknown, {}, UserCredentials> & UserCredentials & {
-        _id: import("mongoose").Types.ObjectId;
-    })[]>;
-    findUserByCreds(userLoginDto: UserLoginDto): Promise<(import("mongoose").Document<unknown, {}, UserCredentials> & UserCredentials & {
-        _id: import("mongoose").Types.ObjectId;
-    })[]>;
+    getAllUsersCreds(): Promise<UserDocument[]>;
+    findUserByCreds(userLoginDto: AuthUserDto): Promise<UserDocument>;
+    update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto): Promise<UserDocument>;
 }

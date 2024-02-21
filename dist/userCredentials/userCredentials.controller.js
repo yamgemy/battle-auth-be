@@ -14,59 +14,35 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserCrendtialsController = void 0;
 const common_1 = require("@nestjs/common");
-const user_login_dto_1 = require("./dto/user-login.dto");
+const update_user_dto_1 = require("./dto/update-user.dto");
 const userCredentials_services_1 = require("./userCredentials.services");
 let UserCrendtialsController = class UserCrendtialsController {
     constructor(userCredentialsService) {
         this.userCredentialsService = userCredentialsService;
     }
-    async performLogin(requestBody, requestHeaders) {
-        console.log('wehehe', requestHeaders);
-        const resultArray = await this.userCredentialsService.findUserByCreds(requestBody);
-        const loginResultKey = 'details';
-        const loginResultCodeKey = 'code';
-        const response = {};
-        response[loginResultCodeKey] = 0;
-        response[loginResultKey] = 'unknown_error';
-        if (!resultArray || resultArray.length === 0) {
-            response[loginResultCodeKey] = 1;
-            response[loginResultKey] = 'user_not_found';
-            return response;
-        }
-        if (resultArray.length > 0) {
-            const user = resultArray[0];
-            if (user.password === requestBody.password) {
-                response[loginResultCodeKey] = 2;
-                response[loginResultKey] = 'username_and_password_match';
-                return response;
-            }
-            if (user.password !== requestBody.password) {
-                response[loginResultCodeKey] = 3;
-                response[loginResultKey] = 'user_found_password_incorrect';
-                return response;
-            }
-        }
-    }
     async listAll() {
         const result = await this.userCredentialsService.getAllUsersCreds();
         return result;
     }
+    update(id, updateUserDto) {
+        return this.userCredentialsService.update(id, updateUserDto);
+    }
 };
 exports.UserCrendtialsController = UserCrendtialsController;
-__decorate([
-    (0, common_1.Post)(),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Headers)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [user_login_dto_1.UserLoginDto, Object]),
-    __metadata("design:returntype", Promise)
-], UserCrendtialsController.prototype, "performLogin", null);
 __decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], UserCrendtialsController.prototype, "listAll", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, update_user_dto_1.UpdateUserDto]),
+    __metadata("design:returntype", void 0)
+], UserCrendtialsController.prototype, "update", null);
 exports.UserCrendtialsController = UserCrendtialsController = __decorate([
     (0, common_1.Controller)('cred'),
     __metadata("design:paramtypes", [userCredentials_services_1.UserCredentialsService])

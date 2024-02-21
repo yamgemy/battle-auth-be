@@ -21,12 +21,17 @@ let UserCredentialsService = class UserCredentialsService {
     constructor(credsModel) {
         this.credsModel = credsModel;
     }
-    getAllUsersCreds() {
+    async getAllUsersCreds() {
         return this.credsModel.find().exec();
     }
-    findUserByCreds(userLoginDto) {
+    async findUserByCreds(userLoginDto) {
+        return (this.credsModel
+            .findOne({ login_name: userLoginDto.login_name })
+            .exec());
+    }
+    async update(id, updateUserDto) {
         return this.credsModel
-            .find({ login_name: userLoginDto.login_name }, { password: 1 })
+            .findByIdAndUpdate(id, updateUserDto, { new: true })
             .exec();
     }
 };

@@ -15,5 +15,6 @@ import { UserCredentialsService } from './userCredentials.services';
   ],
   controllers: [UserCrendtialsController],
   providers: [UserCredentialsService],
+  exports: [UserCredentialsService], //wtf https://stackoverflow.com/questions/70906216/nest-cant-resolve-dependencies-of-the-authenticationservice
 })
 export class UserCredentialsModule {}

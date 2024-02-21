@@ -84,28 +84,36 @@ export class AuthService {
     });
   }
 
+  async getAccessToken(userId: Types.ObjectId | string, username: string) {
+    return await this.jwtService.signAsync(
+      {
+        sub: userId,
+        username,
+      },
+      {
+        secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+        expiresIn: '15m',
+      },
+    );
+  }
+
+  async getRefreshToken(userId: Types.ObjectId | string, username: string) {
+    return await this.jwtService.signAsync(
+      {
+        sub: userId,
+        username,
+      },
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+      },
+    );
+  }
+
   async getTokens(userId: Types.ObjectId, username: string) {
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(
-        {
-          sub: userId,
-          username,
-        },
-        {
-          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '15m',
-        },
-      ),
-      this.jwtService.signAsync(
-        {
-          sub: userId,
-          username,
-        },
-        {
-          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-          expiresIn: '7d',
-        },
-      ),
+      this.getAccessToken(userId, username),
+      this.getRefreshToken(userId, username),
     ]);
 
     return {

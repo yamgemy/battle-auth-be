@@ -37,6 +37,8 @@ export declare class AuthService {
     signIn(authDto: AuthDto): Promise<Record<string, string | number>>;
     hashData(data: string): Promise<string>;
     updateRefreshToken(userId: Types.ObjectId, refreshToken: string): Promise<void>;
+    getAccessToken(userId: Types.ObjectId | string, username: string): Promise<string>;
+    getRefreshToken(userId: Types.ObjectId | string, username: string): Promise<string>;
     getTokens(userId: Types.ObjectId, username: string): Promise<{
         accessToken: string;
         refreshToken: string;

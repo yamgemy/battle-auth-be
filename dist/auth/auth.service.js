@@ -69,22 +69,28 @@ let AuthService = class AuthService {
             refreshToken: hashedRefreshToken,
         });
     }
+    async getAccessToken(userId, username) {
+        return await this.jwtService.signAsync({
+            sub: userId,
+            username,
+        }, {
+            secret: this.configService.get('JWT_ACCESS_SECRET'),
+            expiresIn: '15m',
+        });
+    }
+    async getRefreshToken(userId, username) {
+        return await this.jwtService.signAsync({
+            sub: userId,
+            username,
+        }, {
+            secret: this.configService.get('JWT_REFRESH_SECRET'),
+            expiresIn: '7d',
+        });
+    }
     async getTokens(userId, username) {
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync({
-                sub: userId,
-                username,
-            }, {
-                secret: this.configService.get('JWT_ACCESS_SECRET'),
-                expiresIn: '15m',
-            }),
-            this.jwtService.signAsync({
-                sub: userId,
-                username,
-            }, {
-                secret: this.configService.get('JWT_REFRESH_SECRET'),
-                expiresIn: '7d',
-            }),
+            this.getAccessToken(userId, username),
+            this.getRefreshToken(userId, username),
         ]);
         return {
             accessToken,

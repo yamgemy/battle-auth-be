@@ -26,6 +26,9 @@ let UserCredentialsService = class UserCredentialsService {
     async getAllUsersCreds() {
         return this.credsModel.find().exec();
     }
+    async findUserById(userId) {
+        return this.credsModel.findById(userId).exec();
+    }
     async findUserByCreds(userLoginDto) {
         return (this.credsModel
             .findOne({ login_name: userLoginDto.login_name })

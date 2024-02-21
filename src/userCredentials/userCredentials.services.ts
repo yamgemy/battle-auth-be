@@ -23,6 +23,10 @@ export class UserCredentialsService {
     return this.credsModel.find().exec();
   }
 
+  async findUserById(userId: Types.ObjectId | string): Promise<UserDocument> {
+    return this.credsModel.findById(userId).exec();
+  }
+
   //returns a promise
   async findUserByCreds(userLoginDto: AuthUserDto): Promise<UserDocument> {
     return (
@@ -52,11 +56,12 @@ export class UserCredentialsService {
   ) {
     const hashedUpdateUserDto = Object.assign({}, updateUserDto);
     if ('password' in updateUserDto) {
-      //TODO updating pw must also update refresh token
-      //TODO after refresh token updated on DB, send signal to all clients to logout (socket etc)
       hashedUpdateUserDto.password = await this.authService.hashData(
         updateUserDto.password,
       );
+      //TODO after pw updated on DB,
+      //1. invalidate DB refersh token for this user
+      //2. send signal to all clients to logout (socket etc)
     }
     return this.credsModel
       .findByIdAndUpdate(id, hashedUpdateUserDto, { new: true })

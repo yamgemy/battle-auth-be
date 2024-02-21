@@ -21,6 +21,14 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
         this.userCredentialsService = userCredentialsService;
     }
+    async verifyAccessToken(token) {
+        const accessSecret = this.configService.get('JWT_ACCESS_SECRET');
+        return await this.jwtService.verifyAsync(token, { secret: accessSecret });
+    }
+    async verifyRefreshToken(token) {
+        const refreshSecret = this.configService.get('JWT_REFRESH_SECRET');
+        return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
+    }
     async signIn(authDto) {
         const user = await this.userCredentialsService.findUserByCreds(authDto);
         const loginResultKey = 'details';

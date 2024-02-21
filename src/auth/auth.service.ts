@@ -16,6 +16,16 @@ export class AuthService {
 
   //TODO CREATE USER
 
+  async verifyAccessToken(token: string): Promise<object> {
+    const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
+    return await this.jwtService.verifyAsync(token, { secret: accessSecret });
+  }
+
+  async verifyRefreshToken(token: string): Promise<object> {
+    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
+  }
+
   /*
   signIn should return access and refreh tokens
   */

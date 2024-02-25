@@ -22,6 +22,7 @@
 /// <reference types="mongoose/types/validation" />
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
+import { Response } from 'express';
 import { Types } from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserCredentials } from './schemas/userCredentials.schema';
@@ -30,7 +31,5 @@ export declare class UserCrendtialsController {
     private userCredentialsService;
     constructor(userCredentialsService: UserCredentialsService);
     listAll(): Promise<UserCredentials[]>;
-    update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto): Promise<import("mongoose").Document<unknown, {}, UserCredentials> & UserCredentials & {
-        _id: Types.ObjectId;
-    }>;
+    update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto, response: Response): Promise<void>;
 }

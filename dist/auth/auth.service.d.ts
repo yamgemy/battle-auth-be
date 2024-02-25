@@ -37,7 +37,7 @@ export declare class AuthService {
     verifyRefreshToken(token: string): Promise<object>;
     signIn(authDto: AuthDto, response: Response): Promise<void>;
     hashData(data: string): Promise<string>;
-    updateRefreshToken(userId: Types.ObjectId, refreshToken: string): Promise<void>;
+    updateRefreshToken(userId: Types.ObjectId, refreshToken: string, response: Response): Promise<void>;
     getAccessToken(userId: Types.ObjectId | string, username: string): Promise<string>;
     getRefreshToken(userId: Types.ObjectId | string, username: string): Promise<string>;
     getTokens(userId: Types.ObjectId, username: string): Promise<{

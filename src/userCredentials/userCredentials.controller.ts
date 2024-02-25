@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { Response } from 'express';
 import { Types } from 'mongoose';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,8 +30,9 @@ export class UserCrendtialsController {
   update(
     @Param('id') id: Types.ObjectId | string,
     @Body() updateUserDto: UpdateUserDto,
+    @Res() response: Response,
   ) {
     //this method is also used during sign in, where there is no token
-    return this.userCredentialsService.update(id, updateUserDto);
+    return this.userCredentialsService.update(id, updateUserDto, response);
   }
 }

@@ -40,7 +40,7 @@ let AuthService = class AuthService {
         if (!user) {
             response[loginResultCodeKey] = 1;
             response[loginResultKey] = 'user_not_found';
-            return response;
+            return Promise.reject(response);
         }
         if (user) {
             const passwordMatches = await argon2.verify(user.password, authDto.password);
@@ -56,7 +56,7 @@ let AuthService = class AuthService {
             if (!passwordMatches) {
                 response[loginResultCodeKey] = 3;
                 response[loginResultKey] = 'user_found_password_incorrect';
-                return response;
+                return Promise.reject(response);
             }
         }
     }

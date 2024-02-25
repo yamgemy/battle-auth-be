@@ -29,34 +29,36 @@ let AuthService = class AuthService {
         const refreshSecret = this.configService.get('JWT_REFRESH_SECRET');
         return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
     }
-    async signIn(authDto) {
+    async signIn(authDto, response) {
         const user = await this.userCredentialsService.findUserByCreds(authDto);
         const loginResultKey = 'details';
         const loginResultCodeKey = 'code';
         const loginTokensKey = 'tokens';
-        const response = {};
         response[loginResultCodeKey] = 0;
         response[loginResultKey] = 'unknown_error';
         if (!user) {
-            response[loginResultCodeKey] = 1;
-            response[loginResultKey] = 'user_not_found';
-            return Promise.reject(response);
+            throw new common_1.HttpException({
+                [loginResultCodeKey]: 1,
+                [loginResultKey]: 'user_not_found',
+            }, common_1.HttpStatus.FORBIDDEN);
         }
         if (user) {
             const passwordMatches = await argon2.verify(user.password, authDto.password);
             if (passwordMatches) {
-                response['user_objectId'] = user._id;
-                response[loginResultCodeKey] = 2;
-                response[loginResultKey] = 'username_and_password_match';
                 const tokens = await this.getTokens(user._id, user.login_name);
                 await this.updateRefreshToken(user._id, tokens.refreshToken);
-                response[loginTokensKey] = tokens;
-                return response;
+                response.status(common_1.HttpStatus.OK).json({
+                    ['user_objectId']: user._id,
+                    [loginResultCodeKey]: 2,
+                    [loginResultKey]: 'username_and_password_match',
+                    [loginTokensKey]: tokens,
+                });
             }
             if (!passwordMatches) {
-                response[loginResultCodeKey] = 3;
-                response[loginResultKey] = 'user_found_password_incorrect';
-                return Promise.reject(response);
+                throw new common_1.HttpException({
+                    [loginResultCodeKey]: 1,
+                    [loginResultKey]: 'user_found_password_incorrect',
+                }, common_1.HttpStatus.FORBIDDEN);
             }
         }
     }

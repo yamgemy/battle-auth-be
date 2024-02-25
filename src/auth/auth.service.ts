@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Res } from '@nestjs/common';
+import { HttpStatus, Injectable, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
@@ -44,13 +44,10 @@ export class AuthService {
 
     //case 1 no user found ({}, or null)
     if (!user) {
-      throw new HttpException(
-        {
-          [loginResultCodeKey]: 1,
-          [loginResultKey]: 'user_not_found',
-        },
-        HttpStatus.FORBIDDEN,
-      );
+      response.status(HttpStatus.FORBIDDEN).json({
+        [loginResultCodeKey]: 1,
+        [loginResultKey]: 'user_not_found',
+      });
     }
 
     if (user) {
@@ -71,13 +68,10 @@ export class AuthService {
       }
       //case 3 correct user & incorrect pw
       if (!passwordMatches) {
-        throw new HttpException(
-          {
-            [loginResultCodeKey]: 1,
-            [loginResultKey]: 'user_found_password_incorrect',
-          },
-          HttpStatus.FORBIDDEN,
-        );
+        response.status(HttpStatus.FORBIDDEN).json({
+          [loginResultCodeKey]: 1,
+          [loginResultKey]: 'user_found_password_incorrect',
+        });
       }
     }
   }

@@ -41,10 +41,10 @@ let AuthService = class AuthService {
         response[loginResultCodeKey] = 0;
         response[loginResultKey] = 'unknown_error';
         if (!user) {
-            throw new common_1.HttpException({
+            response.status(common_1.HttpStatus.FORBIDDEN).json({
                 [loginResultCodeKey]: 1,
                 [loginResultKey]: 'user_not_found',
-            }, common_1.HttpStatus.FORBIDDEN);
+            });
         }
         if (user) {
             const passwordMatches = await argon2.verify(user.password, authDto.password);
@@ -59,10 +59,10 @@ let AuthService = class AuthService {
                 });
             }
             if (!passwordMatches) {
-                throw new common_1.HttpException({
+                response.status(common_1.HttpStatus.FORBIDDEN).json({
                     [loginResultCodeKey]: 1,
                     [loginResultKey]: 'user_found_password_incorrect',
-                }, common_1.HttpStatus.FORBIDDEN);
+                });
             }
         }
     }

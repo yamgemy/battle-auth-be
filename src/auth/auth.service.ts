@@ -46,7 +46,7 @@ export class AuthService {
       //{} or null
       response[loginResultCodeKey] = 1;
       response[loginResultKey] = 'user_not_found';
-      return response;
+      return Promise.reject(response);
     }
 
     if (user) {
@@ -68,7 +68,7 @@ export class AuthService {
       if (!passwordMatches) {
         response[loginResultCodeKey] = 3;
         response[loginResultKey] = 'user_found_password_incorrect';
-        return response;
+        return Promise.reject(response);
       }
     }
   }

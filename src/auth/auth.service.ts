@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
+import { Response } from 'express';
 import { Types } from 'mongoose';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
@@ -29,7 +30,7 @@ export class AuthService {
   /*
   signIn should return access and refreh tokens
   */
-  async signIn(authDto: AuthDto): Promise<Record<string, string | number>> {
+  async signIn(authDto: AuthDto, response: Response) {
     //'findUserByCreds' service only finds the user, and returns user pw from db
 
     const user = await this.userCredentialsService.findUserByCreds(authDto);
@@ -37,16 +38,16 @@ export class AuthService {
     const loginResultKey = 'details';
     const loginResultCodeKey = 'code';
     const loginTokensKey = 'tokens';
-    const response = {};
+    // const response = {} as Response;
     response[loginResultCodeKey] = 0;
     response[loginResultKey] = 'unknown_error';
 
-    //case 1 no user found
+    //case 1 no user found ({}, or null)
     if (!user) {
-      //{} or null
-      response[loginResultCodeKey] = 1;
-      response[loginResultKey] = 'user_not_found';
-      return Promise.reject(response);
+      response.status(HttpStatus.FORBIDDEN).json({
+        [loginResultCodeKey]: 1,
+        [loginResultKey]: 'user_not_found',
+      });
     }
 
     if (user) {
@@ -56,19 +57,21 @@ export class AuthService {
         authDto.password,
       );
       if (passwordMatches) {
-        response['user_objectId'] = user._id;
-        response[loginResultCodeKey] = 2;
-        response[loginResultKey] = 'username_and_password_match';
         const tokens = await this.getTokens(user._id, user.login_name);
-        await this.updateRefreshToken(user._id, tokens.refreshToken);
-        response[loginTokensKey] = tokens;
-        return response;
+        await this.updateRefreshToken(user._id, tokens.refreshToken, response);
+        response.status(HttpStatus.OK).json({
+          ['user_objectId']: user._id,
+          [loginResultCodeKey]: 2,
+          [loginResultKey]: 'username_and_password_match',
+          [loginTokensKey]: tokens,
+        });
       }
       //case 3 correct user & incorrect pw
       if (!passwordMatches) {
-        response[loginResultCodeKey] = 3;
-        response[loginResultKey] = 'user_found_password_incorrect';
-        return Promise.reject(response);
+        response.status(HttpStatus.FORBIDDEN).json({
+          [loginResultCodeKey]: 3,
+          [loginResultKey]: 'user_found_password_incorrect',
+        });
       }
     }
   }
@@ -77,11 +80,20 @@ export class AuthService {
     return argon2.hash(data);
   }
 
-  async updateRefreshToken(userId: Types.ObjectId, refreshToken: string) {
+  async updateRefreshToken(
+    userId: Types.ObjectId,
+    refreshToken: string,
+    @Res() response: Response,
+  ) {
     const hashedRefreshToken = await this.hashData(refreshToken);
-    await this.userCredentialsService.update(userId, {
-      refreshToken: hashedRefreshToken,
-    });
+    await this.userCredentialsService.update(
+      userId,
+      {
+        refreshToken: hashedRefreshToken,
+      },
+      response,
+      false, //auth sign in also sends tokens response. if not turn off response here, result response json becomes empty
+    );
   }
 
   async getAccessToken(userId: Types.ObjectId | string, username: string) {

@@ -8,12 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const argon2 = require("argon2");
+const mongoose_1 = require("mongoose");
 const userCredentials_services_1 = require("../userCredentials/userCredentials.services");
 let AuthService = class AuthService {
     constructor(configService, jwtService, userCredentialsService) {
@@ -29,45 +33,47 @@ let AuthService = class AuthService {
         const refreshSecret = this.configService.get('JWT_REFRESH_SECRET');
         return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
     }
-    async signIn(authDto) {
+    async signIn(authDto, response) {
         const user = await this.userCredentialsService.findUserByCreds(authDto);
         const loginResultKey = 'details';
         const loginResultCodeKey = 'code';
         const loginTokensKey = 'tokens';
-        const response = {};
         response[loginResultCodeKey] = 0;
         response[loginResultKey] = 'unknown_error';
         if (!user) {
-            response[loginResultCodeKey] = 1;
-            response[loginResultKey] = 'user_not_found';
-            return response;
+            response.status(common_1.HttpStatus.FORBIDDEN).json({
+                [loginResultCodeKey]: 1,
+                [loginResultKey]: 'user_not_found',
+            });
         }
         if (user) {
             const passwordMatches = await argon2.verify(user.password, authDto.password);
             if (passwordMatches) {
-                response['user_objectId'] = user._id;
-                response[loginResultCodeKey] = 2;
-                response[loginResultKey] = 'username_and_password_match';
                 const tokens = await this.getTokens(user._id, user.login_name);
-                await this.updateRefreshToken(user._id, tokens.refreshToken);
-                response[loginTokensKey] = tokens;
-                return response;
+                await this.updateRefreshToken(user._id, tokens.refreshToken, response);
+                response.status(common_1.HttpStatus.OK).json({
+                    ['user_objectId']: user._id,
+                    [loginResultCodeKey]: 2,
+                    [loginResultKey]: 'username_and_password_match',
+                    [loginTokensKey]: tokens,
+                });
             }
             if (!passwordMatches) {
-                response[loginResultCodeKey] = 3;
-                response[loginResultKey] = 'user_found_password_incorrect';
-                return response;
+                response.status(common_1.HttpStatus.FORBIDDEN).json({
+                    [loginResultCodeKey]: 1,
+                    [loginResultKey]: 'user_found_password_incorrect',
+                });
             }
         }
     }
     hashData(data) {
         return argon2.hash(data);
     }
-    async updateRefreshToken(userId, refreshToken) {
+    async updateRefreshToken(userId, refreshToken, response) {
         const hashedRefreshToken = await this.hashData(refreshToken);
         await this.userCredentialsService.update(userId, {
             refreshToken: hashedRefreshToken,
-        });
+        }, response, false);
     }
     async getAccessToken(userId, username) {
         return await this.jwtService.signAsync({
@@ -99,6 +105,12 @@ let AuthService = class AuthService {
     }
 };
 exports.AuthService = AuthService;
+__decorate([
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [mongoose_1.Types.ObjectId, String, Object]),
+    __metadata("design:returntype", Promise)
+], AuthService.prototype, "updateRefreshToken", null);
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [config_1.ConfigService,

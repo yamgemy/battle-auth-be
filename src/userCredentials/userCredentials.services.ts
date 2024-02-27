@@ -1,5 +1,6 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Response } from 'express';
 import { Model, Types } from 'mongoose';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthUserDto } from './dto/auth-user.dto';
@@ -41,30 +42,40 @@ export class UserCredentialsService {
   async update(
     id: Types.ObjectId | string,
     updateUserDto: UpdateUserDto, //can contain only 1 field from User
-  ): Promise<UserDocument> {
+    response: Response,
+    sendResponse: boolean = true,
+  ) {
     if ('password' in updateUserDto) {
-      return this.updateWithPasswordChange(id, updateUserDto);
+      console.log('A');
+      this.updateWithPasswordChange(id, updateUserDto, response);
+    } else {
+      console.log('B');
+      const result = this.credsModel
+        .findByIdAndUpdate(id, updateUserDto, { new: true })
+        .exec();
+      sendResponse && response.status(HttpStatus.OK).json(result);
     }
-    return this.credsModel
-      .findByIdAndUpdate(id, updateUserDto, { new: true })
-      .exec();
   }
 
   async updateWithPasswordChange(
     id: Types.ObjectId | string,
     updateUserDto: UpdateUserDto, //can contain only 1 field from User
+    response: Response,
   ) {
     const hashedUpdateUserDto = Object.assign({}, updateUserDto);
-    if ('password' in updateUserDto) {
-      hashedUpdateUserDto.password = await this.authService.hashData(
-        updateUserDto.password,
-      );
-      //TODO after pw updated on DB,
-      //1. invalidate DB refersh token for this user
-      //2. send signal to all clients to logout (socket etc)
-    }
-    return this.credsModel
+    console.log('C');
+    hashedUpdateUserDto.password = await this.authService.hashData(
+      updateUserDto.password,
+    );
+    const result = await this.credsModel
       .findByIdAndUpdate(id, hashedUpdateUserDto, { new: true })
       .exec();
+    response
+      .status(HttpStatus.OK)
+      .json({ updateWithPasswordChange: 1, result });
+
+    //TODO after pw updated on DB,
+    //1. invalidate DB refersh token for this user
+    //2. send signal to all clients to logout (socket etc)
   }
 }

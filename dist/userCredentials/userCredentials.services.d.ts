@@ -22,6 +22,7 @@
 /// <reference types="mongoose/types/validation" />
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
+import { Response } from 'express';
 import { Model, Types } from 'mongoose';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthUserDto } from './dto/auth-user.dto';
@@ -34,8 +35,6 @@ export declare class UserCredentialsService {
     getAllUsersCreds(): Promise<UserDocument[]>;
     findUserById(userId: Types.ObjectId | string): Promise<UserDocument>;
     findUserByCreds(userLoginDto: AuthUserDto): Promise<UserDocument>;
-    update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto): Promise<UserDocument>;
-    updateWithPasswordChange(id: Types.ObjectId | string, updateUserDto: UpdateUserDto): Promise<import("mongoose").Document<unknown, {}, UserCredentials> & UserCredentials & {
-        _id: Types.ObjectId;
-    }>;
+    update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto, response: Response, sendResponse?: boolean): Promise<void>;
+    updateWithPasswordChange(id: Types.ObjectId | string, updateUserDto: UpdateUserDto, response: Response): Promise<void>;
 }

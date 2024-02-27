@@ -25,8 +25,8 @@ let UserCrendtialsController = class UserCrendtialsController {
         const result = await this.userCredentialsService.getAllUsersCreds();
         return result;
     }
-    update(id, updateUserDto) {
-        return this.userCredentialsService.update(id, updateUserDto);
+    update(id, updateUserDto, response) {
+        return this.userCredentialsService.update(id, updateUserDto, response);
     }
 };
 exports.UserCrendtialsController = UserCrendtialsController;
@@ -42,8 +42,9 @@ __decorate([
     (0, common_1.Patch)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, update_user_dto_1.UpdateUserDto]),
+    __metadata("design:paramtypes", [Object, update_user_dto_1.UpdateUserDto, Object]),
     __metadata("design:returntype", void 0)
 ], UserCrendtialsController.prototype, "update", null);
 exports.UserCrendtialsController = UserCrendtialsController = __decorate([

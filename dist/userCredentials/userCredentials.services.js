@@ -34,22 +34,29 @@ let UserCredentialsService = class UserCredentialsService {
             .findOne({ login_name: userLoginDto.login_name })
             .exec());
     }
-    async update(id, updateUserDto) {
+    async update(id, updateUserDto, response, sendResponse = true) {
         if ('password' in updateUserDto) {
-            return this.updateWithPasswordChange(id, updateUserDto);
+            console.log('A');
+            this.updateWithPasswordChange(id, updateUserDto, response);
         }
-        return this.credsModel
-            .findByIdAndUpdate(id, updateUserDto, { new: true })
-            .exec();
+        else {
+            console.log('B');
+            const result = this.credsModel
+                .findByIdAndUpdate(id, updateUserDto, { new: true })
+                .exec();
+            sendResponse && response.status(common_1.HttpStatus.OK).json(result);
+        }
     }
-    async updateWithPasswordChange(id, updateUserDto) {
+    async updateWithPasswordChange(id, updateUserDto, response) {
         const hashedUpdateUserDto = Object.assign({}, updateUserDto);
-        if ('password' in updateUserDto) {
-            hashedUpdateUserDto.password = await this.authService.hashData(updateUserDto.password);
-        }
-        return this.credsModel
+        console.log('C');
+        hashedUpdateUserDto.password = await this.authService.hashData(updateUserDto.password);
+        const result = await this.credsModel
             .findByIdAndUpdate(id, hashedUpdateUserDto, { new: true })
             .exec();
+        response
+            .status(common_1.HttpStatus.OK)
+            .json({ updateWithPasswordChange: 1, result });
     }
 };
 exports.UserCredentialsService = UserCredentialsService;

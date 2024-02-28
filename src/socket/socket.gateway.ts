@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   ConnectedSocket,
@@ -15,6 +16,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { ClientToServerDto } from './dto/client-to-server.dto';
 import { ServerToClientDto } from './dto/server-to-client.dto';
+import { SocketJwtGuard } from './socket.jwtGuard';
 
 const socketGatewayOptions = {
   cors: {
@@ -31,7 +33,7 @@ export class SocketGateway implements OnGatewayConnection {
     private userCredentialsService: UserCredentialsService,
   ) {}
 
-  async handleConnection(client: any): Promise<void> {
+  async handleConnection(client: Socket): Promise<void> {
     try {
       const accessToken = client.handshake.headers.authorization.split(' ')[1];
       const payload = await this.authService.verifyAccessToken(accessToken);
@@ -39,6 +41,11 @@ export class SocketGateway implements OnGatewayConnection {
         payload.userId,
       );
       !user && client.disconnect();
+      const isClientConnected = client.connected;
+      console.log(
+        '@SocketGateway handleConnection connected',
+        isClientConnected,
+      );
     } catch (wsConnectionError) {
       console.log('@SocketGateway handleConnection error', wsConnectionError);
     }
@@ -62,12 +69,11 @@ export class SocketGateway implements OnGatewayConnection {
     return data;
   }
 
-  @SubscribeMessage('events')
-  handleEvent(
-    @MessageBody() data: string,
-    @ConnectedSocket() client: Socket,
-  ): string {
-    client.handshake.headers;
-    return data;
+  @UseGuards(SocketJwtGuard)
+  @SubscribeMessage('eventsFromClient')
+  handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket) {
+    console.log('handleEvent eventsFromClient incoming data:', data);
+    client.emit('eventsEmitFromServer', 'SocketGateway says hello back');
+    // return data;
   }
 }

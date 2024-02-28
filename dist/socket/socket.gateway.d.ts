@@ -9,9 +9,9 @@ export declare class SocketGateway implements OnGatewayConnection {
     private authService;
     private userCredentialsService;
     constructor(configService: ConfigService, authService: AuthService, userCredentialsService: UserCredentialsService);
-    handleConnection(client: any): Promise<void>;
+    handleConnection(client: Socket): Promise<void>;
     server: Server;
     findAll(data: any): Observable<WsResponse<number>>;
     identity(data: number): Promise<number>;
-    handleEvent(data: string, client: Socket): string;
+    handleEvent(data: string, client: Socket): void;
 }

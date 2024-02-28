@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketGateway = void 0;
+const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const websockets_1 = require("@nestjs/websockets");
 const rxjs_1 = require("rxjs");
@@ -20,6 +21,7 @@ const operators_1 = require("rxjs/operators");
 const socket_io_1 = require("socket.io");
 const auth_service_1 = require("../auth/auth.service");
 const userCredentials_services_1 = require("../userCredentials/userCredentials.services");
+const socket_jwtGuard_1 = require("./socket.jwtGuard");
 const socketGatewayOptions = {
     cors: {
         origin: '*',
@@ -38,6 +40,8 @@ let SocketGateway = class SocketGateway {
             const payload = await this.authService.verifyAccessToken(accessToken);
             const user = await this.userCredentialsService.findUserById(payload.userId);
             !user && client.disconnect();
+            const isClientConnected = client.connected;
+            console.log('@SocketGateway handleConnection connected', isClientConnected);
         }
         catch (wsConnectionError) {
             console.log('@SocketGateway handleConnection error', wsConnectionError);
@@ -50,8 +54,8 @@ let SocketGateway = class SocketGateway {
         return data;
     }
     handleEvent(data, client) {
-        client.handshake.headers;
-        return data;
+        console.log('handleEvent eventsFromClient incoming data:', data);
+        client.emit('eventsEmitFromServer', 'SocketGateway says hello back');
     }
 };
 exports.SocketGateway = SocketGateway;
@@ -74,12 +78,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SocketGateway.prototype, "identity", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('events'),
+    (0, common_1.UseGuards)(socket_jwtGuard_1.SocketJwtGuard),
+    (0, websockets_1.SubscribeMessage)('eventsFromClient'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, socket_io_1.Socket]),
-    __metadata("design:returntype", String)
+    __metadata("design:returntype", void 0)
 ], SocketGateway.prototype, "handleEvent", null);
 exports.SocketGateway = SocketGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(socketGatewayOptions),

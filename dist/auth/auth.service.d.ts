@@ -33,7 +33,7 @@ export declare class AuthService {
     private jwtService;
     private userCredentialsService;
     constructor(configService: ConfigService, jwtService: JwtService, userCredentialsService: UserCredentialsService);
-    verifyAccessToken(token: string): Promise<object>;
+    verifyAccessToken(token: string): Promise<Record<string, any>>;
     verifyRefreshToken(token: string): Promise<object>;
     signIn(authDto: AuthDto, response: Response): Promise<void>;
     hashData(data: string): Promise<string>;

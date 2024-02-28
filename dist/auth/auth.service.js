@@ -60,7 +60,7 @@ let AuthService = class AuthService {
             }
             if (!passwordMatches) {
                 response.status(common_1.HttpStatus.FORBIDDEN).json({
-                    [loginResultCodeKey]: 1,
+                    [loginResultCodeKey]: 3,
                     [loginResultKey]: 'user_found_password_incorrect',
                 });
             }

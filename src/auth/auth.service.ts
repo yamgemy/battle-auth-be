@@ -17,7 +17,7 @@ export class AuthService {
 
   //TODO CREATE USER
 
-  async verifyAccessToken(token: string): Promise<object> {
+  async verifyAccessToken(token: string): Promise<Record<string, any>> {
     const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
     return await this.jwtService.verifyAsync(token, { secret: accessSecret });
   }

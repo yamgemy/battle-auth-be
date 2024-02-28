@@ -1,4 +1,4 @@
-export declare class AuthDto {
+export interface AuthDto {
     login_name: string;
     password: string;
 }

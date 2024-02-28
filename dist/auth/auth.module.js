@@ -24,12 +24,13 @@ exports.AuthModule = AuthModule = __decorate([
         imports: [config_1.ConfigModule, jwt_1.JwtModule.register({}), userCredentials_module_1.UserCredentialsModule],
         controllers: [auth_controller_1.AuthController],
         providers: [
+            jwt_1.JwtService,
             auth_service_1.AuthService,
             accessToken_strategy_1.AccessTokenStrategy,
             refreshToken_strategy_1.RefreshTokenStrategy,
             auth_guard_1.AuthGuard,
         ],
-        exports: [auth_service_1.AuthService],
+        exports: [jwt_1.JwtService, auth_service_1.AuthService],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

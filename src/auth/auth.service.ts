@@ -7,6 +7,11 @@ import { Types } from 'mongoose';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
 
+interface JwtContents {
+  userId: Types.ObjectId | string;
+  login_name: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -17,12 +22,12 @@ export class AuthService {
 
   //TODO CREATE USER
 
-  async verifyAccessToken(token: string): Promise<object> {
+  async verifyAccessToken(token: string): Promise<JwtContents> {
     const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
     return await this.jwtService.verifyAsync(token, { secret: accessSecret });
   }
 
-  async verifyRefreshToken(token: string): Promise<object> {
+  async verifyRefreshToken(token: string): Promise<JwtContents> {
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
     return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
   }
@@ -57,7 +62,10 @@ export class AuthService {
         authDto.password,
       );
       if (passwordMatches) {
-        const tokens = await this.getTokens(user._id, user.login_name);
+        const tokens = await this.getTokens({
+          userId: user._id,
+          login_name: user.login_name,
+        });
         await this.updateRefreshToken(user._id, tokens.refreshToken, response);
         response.status(HttpStatus.OK).json({
           ['user_objectId']: user._id,
@@ -69,7 +77,7 @@ export class AuthService {
       //case 3 correct user & incorrect pw
       if (!passwordMatches) {
         response.status(HttpStatus.FORBIDDEN).json({
-          [loginResultCodeKey]: 1,
+          [loginResultCodeKey]: 3,
           [loginResultKey]: 'user_found_password_incorrect',
         });
       }
@@ -96,11 +104,11 @@ export class AuthService {
     );
   }
 
-  async getAccessToken(userId: Types.ObjectId | string, username: string) {
+  async getAccessToken({ userId, login_name }: JwtContents) {
     return await this.jwtService.signAsync(
       {
-        sub: userId,
-        username,
+        userId,
+        login_name,
       },
       {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
@@ -109,11 +117,11 @@ export class AuthService {
     );
   }
 
-  async getRefreshToken(userId: Types.ObjectId | string, username: string) {
+  async getRefreshToken({ userId, login_name }: JwtContents) {
     return await this.jwtService.signAsync(
       {
-        sub: userId,
-        username,
+        userId,
+        login_name,
       },
       {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
@@ -122,10 +130,10 @@ export class AuthService {
     );
   }
 
-  async getTokens(userId: Types.ObjectId, username: string) {
+  async getTokens({ userId, login_name }: JwtContents) {
     const [accessToken, refreshToken] = await Promise.all([
-      this.getAccessToken(userId, username),
-      this.getRefreshToken(userId, username),
+      this.getAccessToken({ userId, login_name }),
+      this.getRefreshToken({ userId, login_name }),
     ]);
 
     return {

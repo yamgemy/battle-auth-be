@@ -28,20 +28,25 @@ import { Response } from 'express';
 import { Types } from 'mongoose';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
+interface JwtContents {
+    userId: Types.ObjectId | string;
+    login_name: string;
+}
 export declare class AuthService {
     private configService;
     private jwtService;
     private userCredentialsService;
     constructor(configService: ConfigService, jwtService: JwtService, userCredentialsService: UserCredentialsService);
-    verifyAccessToken(token: string): Promise<Record<string, any>>;
-    verifyRefreshToken(token: string): Promise<object>;
+    verifyAccessToken(token: string): Promise<JwtContents>;
+    verifyRefreshToken(token: string): Promise<JwtContents>;
     signIn(authDto: AuthDto, response: Response): Promise<void>;
     hashData(data: string): Promise<string>;
     updateRefreshToken(userId: Types.ObjectId, refreshToken: string, response: Response): Promise<void>;
-    getAccessToken(userId: Types.ObjectId | string, username: string): Promise<string>;
-    getRefreshToken(userId: Types.ObjectId | string, username: string): Promise<string>;
-    getTokens(userId: Types.ObjectId, username: string): Promise<{
+    getAccessToken({ userId, login_name }: JwtContents): Promise<string>;
+    getRefreshToken({ userId, login_name }: JwtContents): Promise<string>;
+    getTokens({ userId, login_name }: JwtContents): Promise<{
         accessToken: string;
         refreshToken: string;
     }>;
 }
+export {};

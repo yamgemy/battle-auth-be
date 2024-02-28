@@ -49,7 +49,10 @@ let AuthService = class AuthService {
         if (user) {
             const passwordMatches = await argon2.verify(user.password, authDto.password);
             if (passwordMatches) {
-                const tokens = await this.getTokens(user._id, user.login_name);
+                const tokens = await this.getTokens({
+                    userId: user._id,
+                    login_name: user.login_name,
+                });
                 await this.updateRefreshToken(user._id, tokens.refreshToken, response);
                 response.status(common_1.HttpStatus.OK).json({
                     ['user_objectId']: user._id,
@@ -75,28 +78,28 @@ let AuthService = class AuthService {
             refreshToken: hashedRefreshToken,
         }, response, false);
     }
-    async getAccessToken(userId, username) {
+    async getAccessToken({ userId, login_name }) {
         return await this.jwtService.signAsync({
-            sub: userId,
-            username,
+            userId,
+            login_name,
         }, {
             secret: this.configService.get('JWT_ACCESS_SECRET'),
             expiresIn: '15m',
         });
     }
-    async getRefreshToken(userId, username) {
+    async getRefreshToken({ userId, login_name }) {
         return await this.jwtService.signAsync({
-            sub: userId,
-            username,
+            userId,
+            login_name,
         }, {
             secret: this.configService.get('JWT_REFRESH_SECRET'),
             expiresIn: '7d',
         });
     }
-    async getTokens(userId, username) {
+    async getTokens({ userId, login_name }) {
         const [accessToken, refreshToken] = await Promise.all([
-            this.getAccessToken(userId, username),
-            this.getRefreshToken(userId, username),
+            this.getAccessToken({ userId, login_name }),
+            this.getRefreshToken({ userId, login_name }),
         ]);
         return {
             accessToken,

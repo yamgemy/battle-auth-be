@@ -8,16 +8,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketModule = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const auth_module_1 = require("../auth/auth.module");
 const userCredentials_module_1 = require("../userCredentials/userCredentials.module");
 const socket_gateway_1 = require("./socket.gateway");
+const socket_jwtGuard_1 = require("./socket.jwtGuard");
 let SocketModule = class SocketModule {
 };
 exports.SocketModule = SocketModule;
 exports.SocketModule = SocketModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule, userCredentials_module_1.UserCredentialsModule],
-        providers: [socket_gateway_1.SocketGateway],
+        imports: [config_1.ConfigModule, auth_module_1.AuthModule, userCredentials_module_1.UserCredentialsModule],
+        providers: [socket_jwtGuard_1.SocketJwtGuard, socket_gateway_1.SocketGateway],
     })
 ], SocketModule);
 //# sourceMappingURL=socket.module.js.map

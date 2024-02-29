@@ -17,13 +17,18 @@ export class SocketJwtGuard implements CanActivate {
     private userCredentialsService: UserCredentialsService,
   ) {}
 
-  canActivate(
+  async canActivate(
     context: any,
-  ): boolean | any | Promise<boolean | any> | Observable<boolean | any> {
+  ): Promise<
+    boolean | any | Promise<boolean | any> | Observable<boolean | any>
+  > {
     const bearerToken =
       context.args[0].handshake.headers.authorization.split(' ')[1];
     try {
-      const decoded = this.authService.verifyAccessToken(bearerToken) as any;
+      const decoded = (await this.authService.verifyAccessToken(
+        bearerToken,
+      )) as any;
+      console.log(decoded);
       return new Promise(async (resolve, reject) => {
         const user = await this.userCredentialsService.findUserById(
           decoded.userId,

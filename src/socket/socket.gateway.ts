@@ -16,17 +16,17 @@ import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
-import { ClientToServerDto } from './dto/client-to-server.dto';
-import { ServerToClientDto } from './dto/server-to-client.dto';
 import { SocketJwtGuard } from './socket.jwtGuard';
 
 const socketGatewayOptions = {
   cors: {
     origin: '*',
   },
+  transports: ['websocket'],
+  path: '/socketPath1/',
 };
-
-@WebSocketGateway(socketGatewayOptions)
+//TODO pass port number dynamically into decorator below
+@WebSocketGateway(443, socketGatewayOptions)
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -39,12 +39,15 @@ export class SocketGateway
 
   private logger = new Logger(SocketGateway.name);
 
+  /* this fucks up the gateway; and the implemented interfaces won't call */
   @WebSocketServer()
-  server: Server = new Server<ServerToClientDto, ClientToServerDto>(
-    this.configService.get<number>('WSPORT'), //if same as REST PORT throws error
-    { transports: ['websocket'], path: '/socketPath1/' },
-  );
-
+  // server: Server = new Server<ServerToClientDto, ClientToServerDto>(
+  //   this.configService.get<number>('WSPORT'), //if same as REST PORT throws error
+  //   {
+  //     transports: ['websocket'],
+  //     path: '/socketPath1/',
+  //   },
+  // );
   handleDisconnect(client: any) {
     this.logger.log(`Cliend id:${client.id} disconnected`);
   }
@@ -53,10 +56,11 @@ export class SocketGateway
   }
 
   async handleConnection(client: Socket): Promise<void> {
-    const { sockets } = this.server.sockets;
-    console.log('@SocketGateway handleConnection sockets', sockets);
-    console.log('@SocketGateway handleConnection, client:', client);
+    // const { sockets } = this.server.sockets;
+    // console.log('@SocketGateway handleConnection sockets', sockets);
+
     try {
+      console.log('@SocketGateway handleConnection, client:', client.id);
       const accessToken = client.handshake.headers.authorization.split(' ')[1];
       const payload = await this.authService.verifyAccessToken(accessToken);
       const user = await this.userCredentialsService.findUserById(
@@ -89,7 +93,7 @@ export class SocketGateway
   @SubscribeMessage('eventsFromClient')
   handleEvent(@MessageBody() data: string, @ConnectedSocket() client: Socket) {
     console.log('handleEvent eventsFromClient incoming data:', data);
-    client.emit('eventsEmitFromServer', 'SocketGateway says hello back');
+    client.send('eventsEmitFromServer', 'SocketGateway says hello back');
     // return data;
   }
 }

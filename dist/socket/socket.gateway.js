@@ -27,6 +27,8 @@ const socketGatewayOptions = {
     cors: {
         origin: '*',
     },
+    transports: ['websocket'],
+    path: '/socketPath1/',
 };
 let SocketGateway = SocketGateway_1 = class SocketGateway {
     constructor(configService, authService, userCredentialsService) {
@@ -34,7 +36,6 @@ let SocketGateway = SocketGateway_1 = class SocketGateway {
         this.authService = authService;
         this.userCredentialsService = userCredentialsService;
         this.logger = new common_1.Logger(SocketGateway_1.name);
-        this.server = new socket_io_1.Server(this.configService.get('WSPORT'), { transports: ['websocket'], path: '/socketPath1/' });
     }
     handleDisconnect(client) {
         this.logger.log(`Cliend id:${client.id} disconnected`);
@@ -43,10 +44,8 @@ let SocketGateway = SocketGateway_1 = class SocketGateway {
         this.logger.log('SocketGateway initialized, server:', server);
     }
     async handleConnection(client) {
-        const { sockets } = this.server.sockets;
-        console.log('@SocketGateway handleConnection sockets', sockets);
-        console.log('@SocketGateway handleConnection, client:', client);
         try {
+            console.log('@SocketGateway handleConnection, client:', client.id);
             const accessToken = client.handshake.headers.authorization.split(' ')[1];
             const payload = await this.authService.verifyAccessToken(accessToken);
             const user = await this.userCredentialsService.findUserById(payload.userId);
@@ -66,14 +65,16 @@ let SocketGateway = SocketGateway_1 = class SocketGateway {
     }
     handleEvent(data, client) {
         console.log('handleEvent eventsFromClient incoming data:', data);
-        client.emit('eventsEmitFromServer', 'SocketGateway says hello back');
+        client.send('eventsEmitFromServer', 'SocketGateway says hello back');
     }
 };
 exports.SocketGateway = SocketGateway;
 __decorate([
     (0, websockets_1.WebSocketServer)(),
-    __metadata("design:type", socket_io_1.Server)
-], SocketGateway.prototype, "server", void 0);
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], SocketGateway.prototype, "handleDisconnect", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('events'),
     __param(0, (0, websockets_1.MessageBody)()),
@@ -98,7 +99,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], SocketGateway.prototype, "handleEvent", null);
 exports.SocketGateway = SocketGateway = SocketGateway_1 = __decorate([
-    (0, websockets_1.WebSocketGateway)(socketGatewayOptions),
+    (0, websockets_1.WebSocketGateway)(443, socketGatewayOptions),
     __metadata("design:paramtypes", [config_1.ConfigService,
         auth_service_1.AuthService,
         userCredentials_services_1.UserCredentialsService])

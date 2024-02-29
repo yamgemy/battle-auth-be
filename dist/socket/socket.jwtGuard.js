@@ -20,10 +20,11 @@ let SocketJwtGuard = class SocketJwtGuard {
         this.authService = authService;
         this.userCredentialsService = userCredentialsService;
     }
-    canActivate(context) {
+    async canActivate(context) {
         const bearerToken = context.args[0].handshake.headers.authorization.split(' ')[1];
         try {
-            const decoded = this.authService.verifyAccessToken(bearerToken);
+            const decoded = (await this.authService.verifyAccessToken(bearerToken));
+            console.log(decoded);
             return new Promise(async (resolve, reject) => {
                 const user = await this.userCredentialsService.findUserById(decoded.userId);
                 if (user) {

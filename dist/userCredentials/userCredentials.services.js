@@ -40,7 +40,7 @@ let UserCredentialsService = class UserCredentialsService {
             this.updateWithPasswordChange(id, updateUserDto, response);
         }
         else {
-            console.log('B');
+            console.log('userCredentialsService update without password called');
             const result = this.credsModel
                 .findByIdAndUpdate(id, updateUserDto, { new: true })
                 .exec();

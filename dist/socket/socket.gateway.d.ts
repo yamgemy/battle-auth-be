@@ -10,7 +10,6 @@ export declare class SocketGateway implements OnGatewayInit, OnGatewayConnection
     private userCredentialsService;
     constructor(configService: ConfigService, authService: AuthService, userCredentialsService: UserCredentialsService);
     private logger;
-    server: Server;
     handleDisconnect(client: any): void;
     afterInit(server: Server): void;
     handleConnection(client: Socket): Promise<void>;

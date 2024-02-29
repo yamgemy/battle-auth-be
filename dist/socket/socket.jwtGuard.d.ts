@@ -8,5 +8,5 @@ export declare class SocketJwtGuard implements CanActivate {
     private authService;
     private userCredentialsService;
     constructor(configService: ConfigService, authService: AuthService, userCredentialsService: UserCredentialsService);
-    canActivate(context: any): boolean | any | Promise<boolean | any> | Observable<boolean | any>;
+    canActivate(context: any): Promise<boolean | any | Promise<boolean | any> | Observable<boolean | any>>;
 }

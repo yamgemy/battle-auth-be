@@ -1,9 +1,11 @@
-import { UseGuards } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -25,16 +27,34 @@ const socketGatewayOptions = {
 };
 
 @WebSocketGateway(socketGatewayOptions)
-export class SocketGateway implements OnGatewayConnection {
+export class SocketGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   constructor(
     private configService: ConfigService,
     private authService: AuthService,
     // @InjectModel(UserCredentials.name) //do not injectModel from an other module
     private userCredentialsService: UserCredentialsService,
+    private readonly logger = new Logger(SocketGateway.name),
   ) {}
 
+  @WebSocketServer()
+  server: Server = new Server<ServerToClientDto, ClientToServerDto>(
+    this.configService.get<number>('WSPORT'), //if same as REST PORT throws error
+    { transports: ['websocket'], path: '/socketPath1/' },
+  );
+
+  handleDisconnect(client: any) {
+    this.logger.log(`Cliend id:${client.id} disconnected`);
+  }
+  afterInit(server: any) {
+    this.logger.log('SocketGateway initialized, server:', server);
+  }
+
   async handleConnection(client: Socket): Promise<void> {
-    console.log('@SocketGateway handle ws connection, client:', client);
+    const { sockets } = this.server.sockets;
+    console.log('@SocketGateway handleConnection sockets', sockets);
+    console.log('@SocketGateway handleConnection, client:', client);
     try {
       const accessToken = client.handshake.headers.authorization.split(' ')[1];
       const payload = await this.authService.verifyAccessToken(accessToken);
@@ -51,12 +71,6 @@ export class SocketGateway implements OnGatewayConnection {
       console.log('@SocketGateway handleConnection error', wsConnectionError);
     }
   }
-
-  @WebSocketServer()
-  server: Server = new Server<ServerToClientDto, ClientToServerDto>(
-    this.configService.get<number>('WSPORT'), //if same as REST PORT throws error
-    { transports: ['websocket'], path: '/socketPath1/' },
-  );
 
   @SubscribeMessage('events')
   findAll(@MessageBody() data: any): Observable<WsResponse<number>> {

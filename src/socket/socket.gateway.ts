@@ -35,8 +35,9 @@ export class SocketGateway
     private authService: AuthService,
     // @InjectModel(UserCredentials.name) //do not injectModel from an other module
     private userCredentialsService: UserCredentialsService,
-    private readonly logger = new Logger(SocketGateway.name),
   ) {}
+
+  private logger = new Logger(SocketGateway.name);
 
   @WebSocketServer()
   server: Server = new Server<ServerToClientDto, ClientToServerDto>(
@@ -47,7 +48,7 @@ export class SocketGateway
   handleDisconnect(client: any) {
     this.logger.log(`Cliend id:${client.id} disconnected`);
   }
-  afterInit(server: any) {
+  afterInit(server: Server) {
     this.logger.log('SocketGateway initialized, server:', server);
   }
 

@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var SocketGateway_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketGateway = void 0;
 const common_1 = require("@nestjs/common");
@@ -27,14 +28,24 @@ const socketGatewayOptions = {
         origin: '*',
     },
 };
-let SocketGateway = class SocketGateway {
+let SocketGateway = SocketGateway_1 = class SocketGateway {
     constructor(configService, authService, userCredentialsService) {
         this.configService = configService;
         this.authService = authService;
         this.userCredentialsService = userCredentialsService;
-        this.server = new socket_io_1.Server(this.configService.get('WSPORT'), { transports: ['websocket'] });
+        this.logger = new common_1.Logger(SocketGateway_1.name);
+        this.server = new socket_io_1.Server(this.configService.get('WSPORT'), { transports: ['websocket'], path: '/socketPath1/' });
+    }
+    handleDisconnect(client) {
+        this.logger.log(`Cliend id:${client.id} disconnected`);
+    }
+    afterInit(server) {
+        this.logger.log('SocketGateway initialized, server:', server);
     }
     async handleConnection(client) {
+        const { sockets } = this.server.sockets;
+        console.log('@SocketGateway handleConnection sockets', sockets);
+        console.log('@SocketGateway handleConnection, client:', client);
         try {
             const accessToken = client.handshake.headers.authorization.split(' ')[1];
             const payload = await this.authService.verifyAccessToken(accessToken);
@@ -86,7 +97,7 @@ __decorate([
     __metadata("design:paramtypes", [String, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], SocketGateway.prototype, "handleEvent", null);
-exports.SocketGateway = SocketGateway = __decorate([
+exports.SocketGateway = SocketGateway = SocketGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)(socketGatewayOptions),
     __metadata("design:paramtypes", [config_1.ConfigService,
         auth_service_1.AuthService,

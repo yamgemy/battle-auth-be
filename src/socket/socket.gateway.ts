@@ -54,7 +54,7 @@ export class SocketGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server = new Server<ServerToClientDto, ClientToServerDto>(
     this.configService.get<number>('WSPORT'), //if same as REST PORT throws error
-    { transports: ['websocket'] },
+    { transports: ['websocket'], path: '/socketPath1/' },
   );
 
   @SubscribeMessage('events')

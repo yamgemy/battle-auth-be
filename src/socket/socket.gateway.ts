@@ -34,6 +34,7 @@ export class SocketGateway implements OnGatewayConnection {
   ) {}
 
   async handleConnection(client: Socket): Promise<void> {
+    console.log('@SocketGateway handle ws connection, client:', client);
     try {
       const accessToken = client.handshake.headers.authorization.split(' ')[1];
       const payload = await this.authService.verifyAccessToken(accessToken);

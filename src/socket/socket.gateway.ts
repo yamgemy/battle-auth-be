@@ -16,6 +16,8 @@ import { map } from 'rxjs/operators';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
+import { ClientToServerDto } from './dto/client-to-server.dto';
+import { ServerToClientDto } from './dto/server-to-client.dto';
 import { SocketJwtGuard } from './socket.jwtGuard';
 
 const socketGatewayOptions = {
@@ -26,7 +28,7 @@ const socketGatewayOptions = {
   path: '/socketPath1/',
 };
 //TODO pass port number dynamically into decorator below
-@WebSocketGateway(443, socketGatewayOptions)
+@WebSocketGateway(socketGatewayOptions)
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -41,13 +43,8 @@ export class SocketGateway
 
   /* this fucks up the gateway; and the implemented interfaces won't call */
   @WebSocketServer()
-  // server: Server = new Server<ServerToClientDto, ClientToServerDto>(
-  //   this.configService.get<number>('WSPORT'), //if same as REST PORT throws error
-  //   {
-  //     transports: ['websocket'],
-  //     path: '/socketPath1/',
-  //   },
-  // );
+  server: Server = new Server<ServerToClientDto, ClientToServerDto>();
+
   handleDisconnect(client: any) {
     this.logger.log(`Cliend id:${client.id} disconnected`);
   }

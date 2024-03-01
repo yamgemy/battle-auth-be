@@ -36,6 +36,7 @@ let SocketGateway = SocketGateway_1 = class SocketGateway {
         this.authService = authService;
         this.userCredentialsService = userCredentialsService;
         this.logger = new common_1.Logger(SocketGateway_1.name);
+        this.server = new socket_io_1.Server();
     }
     handleDisconnect(client) {
         this.logger.log(`Cliend id:${client.id} disconnected`);
@@ -71,10 +72,8 @@ let SocketGateway = SocketGateway_1 = class SocketGateway {
 exports.SocketGateway = SocketGateway;
 __decorate([
     (0, websockets_1.WebSocketServer)(),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], SocketGateway.prototype, "handleDisconnect", null);
+    __metadata("design:type", socket_io_1.Server)
+], SocketGateway.prototype, "server", void 0);
 __decorate([
     (0, websockets_1.SubscribeMessage)('events'),
     __param(0, (0, websockets_1.MessageBody)()),
@@ -99,7 +98,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], SocketGateway.prototype, "handleEvent", null);
 exports.SocketGateway = SocketGateway = SocketGateway_1 = __decorate([
-    (0, websockets_1.WebSocketGateway)(443, socketGatewayOptions),
+    (0, websockets_1.WebSocketGateway)(socketGatewayOptions),
     __metadata("design:paramtypes", [config_1.ConfigService,
         auth_service_1.AuthService,
         userCredentials_services_1.UserCredentialsService])

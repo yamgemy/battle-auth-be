@@ -21,13 +21,13 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
         this.userCredentialsService = userCredentialsService;
     }
-    async verifyAccessToken(token) {
+    verifyAccessToken(token) {
         const accessSecret = this.configService.get('JWT_ACCESS_SECRET');
-        return await this.jwtService.verifyAsync(token, { secret: accessSecret });
+        return this.jwtService.verifyAsync(token, { secret: accessSecret });
     }
-    async verifyRefreshToken(token) {
+    verifyRefreshToken(token) {
         const refreshSecret = this.configService.get('JWT_REFRESH_SECRET');
-        return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
+        return this.jwtService.verifyAsync(token, { secret: refreshSecret });
     }
     async signIn(authDto, response) {
         const user = await this.userCredentialsService.findUserByCreds(authDto);
@@ -37,7 +37,7 @@ let AuthService = class AuthService {
         response[loginResultCodeKey] = 0;
         response[loginResultKey] = 'unknown_error';
         if (!user) {
-            response.status(common_1.HttpStatus.FORBIDDEN).json({
+            throw new common_1.ForbiddenException({
                 [loginResultCodeKey]: 1,
                 [loginResultKey]: 'user_not_found',
             });
@@ -58,7 +58,7 @@ let AuthService = class AuthService {
                 });
             }
             if (!passwordMatches) {
-                response.status(common_1.HttpStatus.FORBIDDEN).json({
+                throw new common_1.ForbiddenException({
                     [loginResultCodeKey]: 3,
                     [loginResultKey]: 'user_found_password_incorrect',
                 });
@@ -69,9 +69,8 @@ let AuthService = class AuthService {
         return argon2.hash(data);
     }
     async updateRefreshToken(userId, refreshToken) {
-        const hashedRefreshToken = await this.hashData(refreshToken);
         await this.userCredentialsService.update(userId, {
-            refreshToken: hashedRefreshToken,
+            refreshToken: refreshToken,
         });
     }
     async getAccessToken({ userId, login_name }) {
@@ -101,6 +100,28 @@ let AuthService = class AuthService {
             accessToken,
             refreshToken,
         };
+    }
+    async renewAccessToken({ refreshToken }) {
+        try {
+            console.log('@renewAccessToken, ', refreshToken);
+            const decoded = await this.verifyRefreshToken(refreshToken);
+            console.log('@renewAccessToken', decoded);
+            const user = await this.userCredentialsService.findUserById(decoded.userId);
+            if (user) {
+                return {
+                    newAccessToken: await this.getAccessToken({
+                        userId: decoded.userId,
+                        login_name: decoded.login_name,
+                    }),
+                };
+            }
+            else {
+                throw new common_1.UnauthorizedException('Invalid refresh token submitted from client');
+            }
+        }
+        catch (e) {
+            console.log('@renewAccessToken e', e);
+        }
     }
 };
 exports.AuthService = AuthService;

@@ -28,6 +28,7 @@ import { Response } from 'express';
 import { Types } from 'mongoose';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
+import { RenewAccessDto } from './dto/renewAcess.dto';
 interface JwtContents {
     userId: Types.ObjectId | string;
     login_name: string;
@@ -47,6 +48,9 @@ export declare class AuthService {
     getTokens({ userId, login_name }: JwtContents): Promise<{
         accessToken: string;
         refreshToken: string;
+    }>;
+    renewAccessToken({ refreshToken }: RenewAccessDto): Promise<{
+        newAccessToken: string;
     }>;
 }
 export {};

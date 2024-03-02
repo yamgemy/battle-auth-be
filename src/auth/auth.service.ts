@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
@@ -6,6 +11,7 @@ import { Response } from 'express';
 import { Types } from 'mongoose';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
+import { RenewAccessDto } from './dto/renewAcess.dto';
 
 interface JwtContents {
   userId: Types.ObjectId | string;
@@ -22,14 +28,14 @@ export class AuthService {
 
   //TODO CREATE USER
 
-  async verifyAccessToken(token: string): Promise<JwtContents> {
+  verifyAccessToken(token: string): Promise<JwtContents> {
     const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
-    return await this.jwtService.verifyAsync(token, { secret: accessSecret });
+    return this.jwtService.verifyAsync(token, { secret: accessSecret });
   }
 
-  async verifyRefreshToken(token: string): Promise<JwtContents> {
+  verifyRefreshToken(token: string): Promise<JwtContents> {
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
-    return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
+    return this.jwtService.verifyAsync(token, { secret: refreshSecret });
   }
 
   /*
@@ -49,7 +55,7 @@ export class AuthService {
 
     //case 1 no user found ({}, or null)
     if (!user) {
-      response.status(HttpStatus.FORBIDDEN).json({
+      throw new ForbiddenException({
         [loginResultCodeKey]: 1,
         [loginResultKey]: 'user_not_found',
       });
@@ -76,7 +82,7 @@ export class AuthService {
       }
       //case 3 correct user & incorrect pw
       if (!passwordMatches) {
-        response.status(HttpStatus.FORBIDDEN).json({
+        throw new ForbiddenException({
           [loginResultCodeKey]: 3,
           [loginResultKey]: 'user_found_password_incorrect',
         });
@@ -88,10 +94,10 @@ export class AuthService {
     return argon2.hash(data);
   }
 
+  //do not hash refresh token. argon2 hashing is irreversible
   async updateRefreshToken(userId: Types.ObjectId, refreshToken: string) {
-    const hashedRefreshToken = await this.hashData(refreshToken);
     await this.userCredentialsService.update(userId, {
-      refreshToken: hashedRefreshToken,
+      refreshToken: refreshToken,
     });
   }
 
@@ -131,5 +137,30 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async renewAccessToken({ refreshToken }: RenewAccessDto) {
+    try {
+      console.log('@renewAccessToken, ', refreshToken);
+      const decoded = await this.verifyRefreshToken(refreshToken);
+      console.log('@renewAccessToken', decoded);
+      const user = await this.userCredentialsService.findUserById(
+        decoded.userId,
+      );
+      if (user) {
+        return {
+          newAccessToken: await this.getAccessToken({
+            userId: decoded.userId,
+            login_name: decoded.login_name,
+          }),
+        };
+      } else {
+        throw new UnauthorizedException(
+          'Invalid refresh token submitted from client',
+        );
+      }
+    } catch (e) {
+      console.log('@renewAccessToken e', e);
+    }
   }
 }

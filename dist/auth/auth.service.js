@@ -80,7 +80,7 @@ let AuthService = class AuthService {
             login_name,
         }, {
             secret: this.configService.get('JWT_ACCESS_SECRET'),
-            expiresIn: '15m',
+            expiresIn: this.configService.get('JWT_ACCESS_TIME'),
         });
     }
     async getRefreshToken({ userId, login_name }) {
@@ -89,7 +89,7 @@ let AuthService = class AuthService {
             login_name,
         }, {
             secret: this.configService.get('JWT_REFRESH_SECRET'),
-            expiresIn: '7d',
+            expiresIn: this.configService.get('JWT_REFRESH_TIME'),
         });
     }
     async getTokens({ userId, login_name }) {

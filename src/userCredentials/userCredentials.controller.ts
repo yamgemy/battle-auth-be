@@ -26,7 +26,7 @@ export class UserCrendtialsController {
   }
 
   @UseGuards(AuthGuard) //only affects incoming requests, not the delegated service
-  @Get(':id')
+  @Get()
   async userCreds(
     @Param('id') id: Types.ObjectId | string,
     @Res() response: Response,

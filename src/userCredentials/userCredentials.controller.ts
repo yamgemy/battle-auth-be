@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Res,
@@ -11,28 +12,48 @@ import { Response } from 'express';
 import { Types } from 'mongoose';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserCredentials } from './schemas/userCredentials.schema';
 import { UserCredentialsService } from './userCredentials.services';
 
 @Controller('cred')
 export class UserCrendtialsController {
   constructor(private userCredentialsService: UserCredentialsService) {}
 
-  @UseGuards(AuthGuard) //only affects incoming requests, not the delegated service
+  @UseGuards(AuthGuard)
   @Get()
-  async listAll(): Promise<UserCredentials[]> {
+  async listAll(@Res() response: Response): Promise<void> {
     const result = await this.userCredentialsService.getAllUsersCreds();
-    return result;
+    response.status(HttpStatus.OK).json(result);
+  }
+
+  @UseGuards(AuthGuard) //only affects incoming requests, not the delegated service
+  @Get(':id')
+  async userCreds(
+    @Param('id') id: Types.ObjectId | string,
+    @Res() response: Response,
+  ): Promise<void> {
+    const result = await this.userCredentialsService.findUserById(id);
+    response.status(HttpStatus.OK).json(result);
   }
 
   @UseGuards(AuthGuard) //only affects incoming requests, not the delegated service
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: Types.ObjectId | string,
     @Body() updateUserDto: UpdateUserDto,
     @Res() response: Response,
-  ) {
+  ): Promise<void> {
     //this method is also used during sign in, where there is no token
-    return this.userCredentialsService.update(id, updateUserDto, response);
+    if ('password' in updateUserDto) {
+      const result = await this.userCredentialsService.updateWithPasswordChange(
+        id,
+        updateUserDto,
+      );
+      response
+        .status(HttpStatus.OK)
+        .json({ updateWithPasswordChange: 1, result });
+    } else {
+      const result = this.userCredentialsService.update(id, updateUserDto);
+      response.status(HttpStatus.OK).json(result);
+    }
   }
 }

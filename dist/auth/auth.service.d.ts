@@ -41,7 +41,7 @@ export declare class AuthService {
     verifyRefreshToken(token: string): Promise<JwtContents>;
     signIn(authDto: AuthDto, response: Response): Promise<void>;
     hashData(data: string): Promise<string>;
-    updateRefreshToken(userId: Types.ObjectId, refreshToken: string, response: Response): Promise<void>;
+    updateRefreshToken(userId: Types.ObjectId, refreshToken: string): Promise<void>;
     getAccessToken({ userId, login_name }: JwtContents): Promise<string>;
     getRefreshToken({ userId, login_name }: JwtContents): Promise<string>;
     getTokens({ userId, login_name }: JwtContents): Promise<{

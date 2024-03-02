@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, Res } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
@@ -66,7 +66,7 @@ export class AuthService {
           userId: user._id,
           login_name: user.login_name,
         });
-        await this.updateRefreshToken(user._id, tokens.refreshToken, response);
+        await this.updateRefreshToken(user._id, tokens.refreshToken);
         response.status(HttpStatus.OK).json({
           ['user_objectId']: user._id,
           [loginResultCodeKey]: 2,
@@ -88,20 +88,11 @@ export class AuthService {
     return argon2.hash(data);
   }
 
-  async updateRefreshToken(
-    userId: Types.ObjectId,
-    refreshToken: string,
-    @Res() response: Response,
-  ) {
+  async updateRefreshToken(userId: Types.ObjectId, refreshToken: string) {
     const hashedRefreshToken = await this.hashData(refreshToken);
-    await this.userCredentialsService.update(
-      userId,
-      {
-        refreshToken: hashedRefreshToken,
-      },
-      response,
-      false, //auth sign in also sends tokens response. if not turn off response here, result response json becomes empty
-    );
+    await this.userCredentialsService.update(userId, {
+      refreshToken: hashedRefreshToken,
+    });
   }
 
   async getAccessToken({ userId, login_name }: JwtContents) {

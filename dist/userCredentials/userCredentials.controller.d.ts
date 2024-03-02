@@ -25,11 +25,11 @@
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserCredentials } from './schemas/userCredentials.schema';
 import { UserCredentialsService } from './userCredentials.services';
 export declare class UserCrendtialsController {
     private userCredentialsService;
     constructor(userCredentialsService: UserCredentialsService);
-    listAll(): Promise<UserCredentials[]>;
+    listAll(response: Response): Promise<void>;
+    userCreds(id: Types.ObjectId | string, response: Response): Promise<void>;
     update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto, response: Response): Promise<void>;
 }

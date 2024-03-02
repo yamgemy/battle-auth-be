@@ -14,7 +14,7 @@ export declare class SocketGateway implements OnGatewayInit, OnGatewayConnection
     handleDisconnect(client: any): void;
     afterInit(server: Server): void;
     handleConnection(client: Socket): Promise<void>;
-    findAll(data: any): Observable<WsResponse<number>>;
+    findAll(): Observable<WsResponse<number>>;
     identity(data: number): Promise<number>;
     handleEvent(data: string, client: Socket): void;
 }

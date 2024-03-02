@@ -58,7 +58,7 @@ let SocketGateway = SocketGateway_1 = class SocketGateway {
             console.log('@SocketGateway handleConnection error', wsConnectionError);
         }
     }
-    findAll(data) {
+    findAll() {
         return (0, rxjs_1.from)([1, 2, 3]).pipe((0, operators_1.map)((item) => ({ event: 'events', data: item })));
     }
     async identity(data) {
@@ -76,9 +76,8 @@ __decorate([
 ], SocketGateway.prototype, "server", void 0);
 __decorate([
     (0, websockets_1.SubscribeMessage)('events'),
-    __param(0, (0, websockets_1.MessageBody)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", rxjs_1.Observable)
 ], SocketGateway.prototype, "findAll", null);
 __decorate([

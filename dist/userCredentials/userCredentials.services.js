@@ -24,39 +24,37 @@ let UserCredentialsService = class UserCredentialsService {
         this.credsModel = credsModel;
     }
     async getAllUsersCreds() {
-        return this.credsModel.find().exec();
+        return await this.credsModel.find().exec();
     }
     async findUserById(userId) {
-        return this.credsModel.findById(userId).exec();
+        return await this.credsModel.findById(userId).exec();
     }
     async findUserByCreds(userLoginDto) {
-        return (this.credsModel
+        return await this.credsModel
             .findOne({ login_name: userLoginDto.login_name })
-            .exec());
+            .exec();
     }
-    async update(id, updateUserDto, response, sendResponse = true) {
+    async update(id, updateUserDto) {
         if ('password' in updateUserDto) {
-            console.log('A');
-            this.updateWithPasswordChange(id, updateUserDto, response);
+            console.log('userCredentialsService update WITH password called');
+            return await this.updateWithPasswordChange(id, updateUserDto);
         }
         else {
             console.log('userCredentialsService update without password called');
-            const result = this.credsModel
+            return await this.credsModel
                 .findByIdAndUpdate(id, updateUserDto, { new: true })
                 .exec();
-            sendResponse && response.status(common_1.HttpStatus.OK).json(result);
         }
     }
-    async updateWithPasswordChange(id, updateUserDto, response) {
+    async updateWithPasswordChange(id, updateUserDto) {
         const hashedUpdateUserDto = Object.assign({}, updateUserDto);
-        console.log('C');
+        console.log('@UserCredentialsService updateWithPasswordChange called');
         hashedUpdateUserDto.password = await this.authService.hashData(updateUserDto.password);
         const result = await this.credsModel
             .findByIdAndUpdate(id, hashedUpdateUserDto, { new: true })
             .exec();
-        response
-            .status(common_1.HttpStatus.OK)
-            .json({ updateWithPasswordChange: 1, result });
+        await this.authService.updateRefreshToken(result._id, result.refreshToken);
+        return result;
     }
 };
 exports.UserCredentialsService = UserCredentialsService;

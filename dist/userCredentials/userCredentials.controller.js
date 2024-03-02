@@ -20,22 +20,45 @@ let UserCrendtialsController = class UserCrendtialsController {
     constructor(userCredentialsService) {
         this.userCredentialsService = userCredentialsService;
     }
-    async listAll() {
+    async listAll(response) {
         const result = await this.userCredentialsService.getAllUsersCreds();
-        return result;
+        response.status(common_1.HttpStatus.OK).json(result);
     }
-    update(id, updateUserDto, response) {
-        return this.userCredentialsService.update(id, updateUserDto, response);
+    async userCreds(id, response) {
+        const result = await this.userCredentialsService.findUserById(id);
+        response.status(common_1.HttpStatus.OK).json(result);
+    }
+    async update(id, updateUserDto, response) {
+        if ('password' in updateUserDto) {
+            const result = await this.userCredentialsService.updateWithPasswordChange(id, updateUserDto);
+            response
+                .status(common_1.HttpStatus.OK)
+                .json({ updateWithPasswordChange: 1, result });
+        }
+        else {
+            const result = this.userCredentialsService.update(id, updateUserDto);
+            response.status(common_1.HttpStatus.OK).json(result);
+        }
     }
 };
 exports.UserCrendtialsController = UserCrendtialsController;
 __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserCrendtialsController.prototype, "listAll", null);
+__decorate([
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], UserCrendtialsController.prototype, "userCreds", null);
 __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, common_1.Patch)(':id'),
@@ -44,7 +67,7 @@ __decorate([
     __param(2, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object, Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], UserCrendtialsController.prototype, "update", null);
 exports.UserCrendtialsController = UserCrendtialsController = __decorate([
     (0, common_1.Controller)('cred'),

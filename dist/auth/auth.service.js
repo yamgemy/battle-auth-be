@@ -30,6 +30,7 @@ let AuthService = class AuthService {
         return this.jwtService.verifyAsync(token, { secret: refreshSecret });
     }
     async signIn(authDto, response) {
+        console.log('@authservice ', authDto);
         const user = await this.userCredentialsService.findUserByCreds(authDto);
         const loginResultKey = 'details';
         const loginResultCodeKey = 'code';

@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { SocketModule } from './socket/socket.module';
 import { UserCredentialsModule } from './userCredentials/userCredentials.module';
+import { SignupModule } from './signup/signup.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserCredentialsModule } from './userCredentials/userCredentials.module'
     UserCredentialsModule,
     AuthModule,
     SocketModule,
+    SignupModule,
   ],
   controllers: [AppController],
   providers: [AppService],

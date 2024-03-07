@@ -20,6 +20,7 @@ let AuthController = class AuthController {
         this.authService = authService;
     }
     signin(data, response) {
+        console.log('singin body', data);
         return this.authService.signIn(data, response);
     }
     getNewAccessToken(data, response) {

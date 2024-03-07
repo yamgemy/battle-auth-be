@@ -43,7 +43,7 @@ export class AuthService {
   */
   async signIn(authDto: AuthDto, response: Response) {
     //'findUserByCreds' service only finds the user, and returns user pw from db
-
+    console.log('@authservice ', authDto);
     const user = await this.userCredentialsService.findUserByCreds(authDto);
 
     const loginResultKey = 'details';

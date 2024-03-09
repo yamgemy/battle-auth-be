@@ -6,13 +6,14 @@ import { UserCredentialsService } from 'src/userCredentials/userCredentials.serv
 export class SignupController {
   constructor(private userCredentialsService: UserCredentialsService) {}
 
+  //this has already been debounced on the client (maybe to add here?)
   @Post('checkEmailExists')
   async checkEmailExists(
     @Body() body,
     @Res() response: Response,
   ): Promise<void> {
     const result = await this.userCredentialsService.findUserByCreds(body);
-    //TODO EXCLUDE ALL DETAILS, JUST RETURN BOOLEAN
-    response.status(HttpStatus.OK).json(result);
+    //EXCLUDE ALL DETAILS, JUST RETURN BOOLEAN (is there a better way?)
+    response.status(HttpStatus.OK).json({ emailExists: Boolean(result) });
   }
 }

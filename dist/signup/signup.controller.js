@@ -21,7 +21,7 @@ let SignupController = class SignupController {
     }
     async checkEmailExists(body, response) {
         const result = await this.userCredentialsService.findUserByCreds(body);
-        response.status(common_1.HttpStatus.OK).json(result);
+        response.status(common_1.HttpStatus.OK).json({ emailExists: Boolean(result) });
     }
 };
 exports.SignupController = SignupController;

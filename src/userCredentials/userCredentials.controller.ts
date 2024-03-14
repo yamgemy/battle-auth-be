@@ -31,7 +31,9 @@ export class UserCrendtialsController {
     @Param('id') id: Types.ObjectId | string,
     @Res() response: Response,
   ): Promise<void> {
+    console.log('@userCreds called', id);
     const result = await this.userCredentialsService.findUserById(id);
+    console.log('@userCreds get', result);
     response.status(HttpStatus.OK).json(result);
   }
 

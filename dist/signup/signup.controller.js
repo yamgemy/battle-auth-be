@@ -15,13 +15,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SignupController = void 0;
 const common_1 = require("@nestjs/common");
 const userCredentials_services_1 = require("../userCredentials/userCredentials.services");
+const signup_service_1 = require("./signup.service");
 let SignupController = class SignupController {
-    constructor(userCredentialsService) {
+    constructor(userCredentialsService, signupService) {
         this.userCredentialsService = userCredentialsService;
+        this.signupService = signupService;
     }
     async checkEmailExists(body, response) {
         const result = await this.userCredentialsService.findUserByCreds(body);
         response.status(common_1.HttpStatus.OK).json({ emailExists: Boolean(result) });
+    }
+    async getServerOtpConfigs() {
+        return this.signupService.getServerOtpConfigs();
+    }
+    async requestOtpForEmail(body) {
+        const { email } = body;
+        return await this.signupService.generateOtpAndSendEmail(email);
+    }
+    async registerEmailWithOtp(body) {
+        const { email, password, otp } = body;
     }
 };
 exports.SignupController = SignupController;
@@ -33,8 +45,29 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], SignupController.prototype, "checkEmailExists", null);
+__decorate([
+    (0, common_1.Get)('getServerOtpConfigs'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SignupController.prototype, "getServerOtpConfigs", null);
+__decorate([
+    (0, common_1.Post)('requestOtpForEmail'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], SignupController.prototype, "requestOtpForEmail", null);
+__decorate([
+    (0, common_1.Post)('registerEmailWithOtp'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], SignupController.prototype, "registerEmailWithOtp", null);
 exports.SignupController = SignupController = __decorate([
     (0, common_1.Controller)('signup'),
-    __metadata("design:paramtypes", [userCredentials_services_1.UserCredentialsService])
+    __metadata("design:paramtypes", [userCredentials_services_1.UserCredentialsService,
+        signup_service_1.SignupService])
 ], SignupController);
 //# sourceMappingURL=signup.controller.js.map

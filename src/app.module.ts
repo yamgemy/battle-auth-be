@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { SocketModule } from './socket/socket.module';
 import { UserCredentialsModule } from './userCredentials/userCredentials.module';
 import { SignupModule } from './signup/signup.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SignupModule } from './signup/signup.module';
     AuthModule,
     SocketModule,
     SignupModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

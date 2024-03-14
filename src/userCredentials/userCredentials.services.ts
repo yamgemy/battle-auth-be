@@ -2,6 +2,7 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { AuthService } from 'src/auth/auth.service';
+import { CheckEmailExistsDto } from 'src/signup/dto/check-email-exists.dto';
 import { AuthUserDto } from './dto/auth-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserCredentials } from './schemas/userCredentials.schema';
@@ -26,7 +27,7 @@ export class UserCredentialsService {
   }
 
   //returns a promise
-  async findUserByCreds(userLoginDto: AuthUserDto) {
+  async findUserByCreds(userLoginDto: AuthUserDto | CheckEmailExistsDto) {
     return await this.credsModel
       .findOne({ login_name: userLoginDto.login_name }) //findone returns document or null
       //.find({ login_name: userLoginDto.login_name }, { password: 1 }) //returns array

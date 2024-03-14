@@ -25,7 +25,9 @@ let UserCrendtialsController = class UserCrendtialsController {
         response.status(common_1.HttpStatus.OK).json(result);
     }
     async userCreds(id, response) {
+        console.log('@userCreds called', id);
         const result = await this.userCredentialsService.findUserById(id);
+        console.log('@userCreds get', result);
         response.status(common_1.HttpStatus.OK).json(result);
     }
     async update(id, updateUserDto, response) {

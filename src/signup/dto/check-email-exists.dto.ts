@@ -1,3 +1,3 @@
 export interface CheckEmailExistsDto {
-  email: string;
+  login_name: string;
 }

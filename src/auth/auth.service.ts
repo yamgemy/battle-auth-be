@@ -11,12 +11,8 @@ import { Response } from 'express';
 import { Types } from 'mongoose';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
+import { JwtContents } from './dto/jwtContents.dto';
 import { RenewAccessDto } from './dto/renewAcess.dto';
-
-interface JwtContents {
-  userId: Types.ObjectId | string;
-  login_name: string;
-}
 
 @Injectable()
 export class AuthService {

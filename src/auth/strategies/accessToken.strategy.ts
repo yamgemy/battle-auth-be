@@ -2,11 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { JwtContents } from '../dto/jwtContents.dto';
 
-type JwtPayload = {
-  sub: string;
-  username: string;
-};
 /*
 ref: https://www.elvisduru.com/blog/nestjs-jwt-authentication-refresh-token
 */
@@ -19,7 +16,8 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  validate(payload: JwtPayload) {
+  validate(payload: JwtContents) {
+    console.log('@validate AccessTokenStrategy', payload);
     return payload;
   }
 }

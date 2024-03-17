@@ -29,7 +29,7 @@ import { UserCredentialsService } from './userCredentials.services';
 export declare class UserCrendtialsController {
     private userCredentialsService;
     constructor(userCredentialsService: UserCredentialsService);
-    listAll(response: Response): Promise<void>;
-    userCreds(id: Types.ObjectId | string, response: Response): Promise<void>;
+    listAll(response: Response, request: Request): Promise<void>;
+    userCreds(id: Types.ObjectId | string, response: Response, request: Request): Promise<void>;
     update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto, response: Response): Promise<void>;
 }

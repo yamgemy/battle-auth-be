@@ -20,12 +20,11 @@ let UserCrendtialsController = class UserCrendtialsController {
     constructor(userCredentialsService) {
         this.userCredentialsService = userCredentialsService;
     }
-    async listAll(response) {
+    async listAll(response, request) {
         const result = await this.userCredentialsService.getAllUsersCreds();
         response.status(common_1.HttpStatus.OK).json(result);
     }
-    async userCreds(id, response) {
-        console.log('@userCreds called', id);
+    async userCreds(id, response, request) {
         const result = await this.userCredentialsService.findUserById(id);
         console.log('@userCreds get', result);
         response.status(common_1.HttpStatus.OK).json(result);
@@ -48,8 +47,9 @@ __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, common_1.Get)(),
     __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Request]),
     __metadata("design:returntype", Promise)
 ], UserCrendtialsController.prototype, "listAll", null);
 __decorate([
@@ -57,8 +57,9 @@ __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Res)()),
+    __param(2, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Request]),
     __metadata("design:returntype", Promise)
 ], UserCrendtialsController.prototype, "userCreds", null);
 __decorate([

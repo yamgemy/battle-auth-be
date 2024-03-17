@@ -11,7 +11,7 @@ import { Response } from 'express';
 import { Types } from 'mongoose';
 import {
   ErrorWithCodeCaseReasons,
-  ResponseithCodeCaseContents,
+  ResponseWithCodeCaseContents,
 } from 'src/declarations/http';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
@@ -73,7 +73,7 @@ export class AuthService {
             tokens,
             user_objectId: user.id,
           },
-        } as ResponseithCodeCaseContents<object>);
+        } as ResponseWithCodeCaseContents<object>);
       }
       //case 3 correct user & incorrect pw
       if (!passwordMatches) {

@@ -1,5 +1,7 @@
 import { Body, Controller, Get, HttpStatus, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
+import { ResponseithCodeCaseContents } from 'src/declarations/http';
+import { UserCredentials } from 'src/userCredentials/schemas/userCredentials.schema';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { CheckEmailExistsDto } from './dto/check-email-exists.dto';
 import { RequestOtpDto } from './dto/request-otp-dto';
@@ -21,7 +23,12 @@ export class SignupController {
   ): Promise<void> {
     const result = await this.userCredentialsService.findUserByCreds(body);
     //EXCLUDE ALL DETAILS, JUST RETURN BOOLEAN (is there a better way?)
-    response.status(HttpStatus.OK).json({ emailExists: Boolean(result) });
+    const isAlreadyRegistered = Boolean(result);
+    response.status(HttpStatus.OK).json({
+      code: isAlreadyRegistered ? 1 : 0,
+      case: isAlreadyRegistered ? 'already registered' : 'available',
+      contents: { emailExists: isAlreadyRegistered },
+    } as ResponseithCodeCaseContents<Record<string, boolean>>);
   }
 
   @Get('getServerOtpConfigs')
@@ -33,18 +40,16 @@ export class SignupController {
   async requestOtpForEmail(
     @Body() body: RequestOtpDto,
     // @Res() response: Response,
-  ): Promise<void> {
+  ): Promise<ResponseithCodeCaseContents<any>> {
     const { email } = body;
     return await this.signupService.generateOtpAndSendEmail(email);
   }
 
-  @Post('validateEmailOtp')
+  @Post('validateEmailOtp') //leads to registration if valid otp
   async validateEmailOtp(
     @Body() body: ValidateEmailOtpDto,
     // @Res() response: Response,
-  ): Promise<void> {
+  ): Promise<ResponseithCodeCaseContents<UserCredentials | string>> {
     return await this.signupService.validateEmailOtp(body);
-    //    const { email, password, otp } = body;
-    //todo
   }
 }

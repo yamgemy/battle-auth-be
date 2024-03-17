@@ -23,6 +23,44 @@ let UserCredentialsService = class UserCredentialsService {
         this.authService = authService;
         this.credsModel = credsModel;
     }
+    async createUser(body) {
+        const { email, password } = body;
+        const user = await this.findUserByCreds({
+            login_name: email,
+        });
+        if (user) {
+            throw new common_1.ForbiddenException({
+                code: 1,
+                case: 'otp_valid_but_email_exists',
+                contents: 'otp valid but email already registered',
+            });
+        }
+        else {
+            const hashedPw = await this.authService.hashData(password);
+            const newUser = new this.credsModel({
+                login_name: email,
+                password: hashedPw,
+            });
+            const tokens = await this.authService.getTokens({
+                login_name: email,
+                userId: newUser._id,
+            });
+            newUser.refreshToken = tokens.refreshToken;
+            console.log('@UserCredentialsService: createUser result', newUser);
+            const newUserCreated = await newUser.save();
+            return {
+                code: 2,
+                case: 'new user created with a new access & refresh token',
+                contents: {
+                    tokens: {
+                        accessToken: tokens.accessToken,
+                        refreshToken: tokens.refreshToken,
+                    },
+                    user_objectId: newUserCreated._id,
+                },
+            };
+        }
+    }
     async getAllUsersCreds() {
         return await this.credsModel.find().exec();
     }

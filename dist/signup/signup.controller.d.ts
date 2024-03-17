@@ -1,4 +1,6 @@
 import { Response } from 'express';
+import { ResponseithCodeCaseContents } from 'src/declarations/http';
+import { UserCredentials } from 'src/userCredentials/schemas/userCredentials.schema';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { CheckEmailExistsDto } from './dto/check-email-exists.dto';
 import { RequestOtpDto } from './dto/request-otp-dto';
@@ -9,10 +11,7 @@ export declare class SignupController {
     private signupService;
     constructor(userCredentialsService: UserCredentialsService, signupService: SignupService);
     checkEmailExists(body: CheckEmailExistsDto, response: Response): Promise<void>;
-    getServerOtpConfigs(): Promise<{
-        otpDigitCount: number;
-        otpValidWindowInSeconds: number;
-    }>;
-    requestOtpForEmail(body: RequestOtpDto): Promise<void>;
-    validateEmailOtp(body: ValidateEmailOtpDto): Promise<void>;
+    getServerOtpConfigs(): Promise<ResponseithCodeCaseContents<any>>;
+    requestOtpForEmail(body: RequestOtpDto): Promise<ResponseithCodeCaseContents<any>>;
+    validateEmailOtp(body: ValidateEmailOtpDto): Promise<ResponseithCodeCaseContents<UserCredentials | string>>;
 }

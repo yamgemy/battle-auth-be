@@ -27,8 +27,12 @@ let SignupService = class SignupService {
     }
     async getServerOtpConfigs() {
         return {
-            otpDigitCount: this.otpDigitCount,
-            otpValidWindowInSeconds: this.otpValidWindowInSeconds,
+            code: 1,
+            case: 'ok',
+            contents: {
+                otpDigitCount: this.otpDigitCount,
+                otpValidWindowInSeconds: this.otpValidWindowInSeconds,
+            },
         };
     }
     async generateOtpAndSendEmail(emailToRegister) {
@@ -42,19 +46,26 @@ let SignupService = class SignupService {
         const newTotp = otplib_1.totp.generate(this.totpSecret);
         const mailresult = await this.mailService.sendUserConfirmation(emailToRegister, newTotp);
         return {
-            expirationTimeInMs,
-            ...mailresult,
+            code: 1,
+            case: 'mail sent',
+            contents: {
+                expirationTimeInMs,
+                ...mailresult,
+            },
         };
     }
     async validateEmailOtp(body) {
-        const { email, password, otp } = body;
+        const { otp } = body;
         const isOtpValid = otplib_1.totp.verify({ token: otp, secret: this.totpSecret });
         if (!isOtpValid) {
+            return {
+                code: 0,
+                case: 'otp_invalid',
+                contents: 'submited otp failed to verify.',
+            };
         }
         if (isOtpValid) {
-            const emailExists = await this.userCredentialService.findUserByCreds({
-                login_name: email,
-            });
+            return await this.userCredentialService.createUser(body);
         }
     }
 };

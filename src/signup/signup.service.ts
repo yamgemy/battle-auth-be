@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { authenticator, totp } from 'otplib';
+import { ResponseithCodeCaseContents } from 'src/declarations/http';
 import { MailService } from 'src/mail/mail.service';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { ValidateEmailOtpDto } from './dto/validate-email-otp.dto';
@@ -28,14 +29,20 @@ export class SignupService {
     this.totpSecret = this.configService.get<string>('TOTP_SECRET');
   }
 
-  async getServerOtpConfigs() {
+  async getServerOtpConfigs(): Promise<ResponseithCodeCaseContents<any>> {
     return {
-      otpDigitCount: this.otpDigitCount,
-      otpValidWindowInSeconds: this.otpValidWindowInSeconds,
+      code: 1,
+      case: 'ok',
+      contents: {
+        otpDigitCount: this.otpDigitCount,
+        otpValidWindowInSeconds: this.otpValidWindowInSeconds,
+      },
     };
   }
 
-  async generateOtpAndSendEmail(emailToRegister: string) {
+  async generateOtpAndSendEmail(
+    emailToRegister: string,
+  ): Promise<ResponseithCodeCaseContents<any>> {
     //and send email
     const timeNowInMs = Date.now();
     const expirationTimeInMs =
@@ -54,23 +61,30 @@ export class SignupService {
     );
 
     return {
-      expirationTimeInMs,
-      ...mailresult,
+      code: 1,
+      case: 'mail sent',
+      contents: {
+        expirationTimeInMs,
+        ...mailresult,
+      },
     };
   }
 
   async validateEmailOtp(body: ValidateEmailOtpDto) {
-    const { email, password, otp } = body;
+    const { otp } = body;
     const isOtpValid = totp.verify({ token: otp, secret: this.totpSecret });
 
     if (!isOtpValid) {
-      //todo
+      return {
+        code: 0,
+        case: 'otp_invalid',
+        contents: 'submited otp failed to verify.',
+      } as ResponseithCodeCaseContents<string>;
     }
 
     if (isOtpValid) {
-      const emailExists = await this.userCredentialService.findUserByCreds({
-        login_name: email,
-      });
+      //create user
+      return await this.userCredentialService.createUser(body);
     }
   }
 }

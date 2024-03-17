@@ -23,7 +23,12 @@ let SignupController = class SignupController {
     }
     async checkEmailExists(body, response) {
         const result = await this.userCredentialsService.findUserByCreds(body);
-        response.status(common_1.HttpStatus.OK).json({ emailExists: Boolean(result) });
+        const isAlreadyRegistered = Boolean(result);
+        response.status(common_1.HttpStatus.OK).json({
+            code: isAlreadyRegistered ? 1 : 0,
+            case: isAlreadyRegistered ? 'already registered' : 'available',
+            contents: { emailExists: isAlreadyRegistered },
+        });
     }
     async getServerOtpConfigs() {
         return this.signupService.getServerOtpConfigs();

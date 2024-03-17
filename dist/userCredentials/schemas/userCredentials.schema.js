@@ -15,7 +15,7 @@ let UserCredentials = class UserCredentials {
 };
 exports.UserCredentials = UserCredentials;
 __decorate([
-    (0, mongoose_1.Prop)({ required: true }),
+    (0, mongoose_1.Prop)({ required: true, unique: true, dropDups: false }),
     __metadata("design:type", String)
 ], UserCredentials.prototype, "login_name", void 0);
 __decorate([

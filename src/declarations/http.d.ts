@@ -1,4 +1,4 @@
-export interface ResponseithCodeCaseContents<ContentsShape> {
+export interface ResponseWithCodeCaseContents<ContentsShape> {
   code: number;
   case: string;
   contents: ContentsShape;

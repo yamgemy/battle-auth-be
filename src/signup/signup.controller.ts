@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpStatus, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { ResponseithCodeCaseContents } from 'src/declarations/http';
+import { ResponseWithCodeCaseContents } from 'src/declarations/http';
 import { UserCredentials } from 'src/userCredentials/schemas/userCredentials.schema';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { CheckEmailExistsDto } from './dto/check-email-exists.dto';
@@ -28,7 +28,7 @@ export class SignupController {
       code: isAlreadyRegistered ? 1 : 0,
       case: isAlreadyRegistered ? 'already registered' : 'available',
       contents: { emailExists: isAlreadyRegistered },
-    } as ResponseithCodeCaseContents<Record<string, boolean>>);
+    } as ResponseWithCodeCaseContents<Record<string, boolean>>);
   }
 
   @Get('getServerOtpConfigs')
@@ -40,7 +40,7 @@ export class SignupController {
   async requestOtpForEmail(
     @Body() body: RequestOtpDto,
     // @Res() response: Response,
-  ): Promise<ResponseithCodeCaseContents<any>> {
+  ): Promise<ResponseWithCodeCaseContents<any>> {
     const { email } = body;
     return await this.signupService.generateOtpAndSendEmail(email);
   }
@@ -49,7 +49,7 @@ export class SignupController {
   async validateEmailOtp(
     @Body() body: ValidateEmailOtpDto,
     // @Res() response: Response,
-  ): Promise<ResponseithCodeCaseContents<UserCredentials | string>> {
+  ): Promise<ResponseWithCodeCaseContents<UserCredentials | string>> {
     return await this.signupService.validateEmailOtp(body);
   }
 }

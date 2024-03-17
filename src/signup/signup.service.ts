@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { authenticator, totp } from 'otplib';
-import { ResponseithCodeCaseContents } from 'src/declarations/http';
+import { ResponseWithCodeCaseContents } from 'src/declarations/http';
 import { MailService } from 'src/mail/mail.service';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { ValidateEmailOtpDto } from './dto/validate-email-otp.dto';
@@ -29,7 +29,7 @@ export class SignupService {
     this.totpSecret = this.configService.get<string>('TOTP_SECRET');
   }
 
-  async getServerOtpConfigs(): Promise<ResponseithCodeCaseContents<any>> {
+  async getServerOtpConfigs(): Promise<ResponseWithCodeCaseContents<any>> {
     return {
       code: 1,
       case: 'ok',
@@ -42,7 +42,7 @@ export class SignupService {
 
   async generateOtpAndSendEmail(
     emailToRegister: string,
-  ): Promise<ResponseithCodeCaseContents<any>> {
+  ): Promise<ResponseWithCodeCaseContents<any>> {
     //and send email
     const timeNowInMs = Date.now();
     const expirationTimeInMs =
@@ -79,7 +79,7 @@ export class SignupService {
         code: 0,
         case: 'otp_invalid',
         contents: 'submited otp failed to verify.',
-      } as ResponseithCodeCaseContents<string>;
+      } as ResponseWithCodeCaseContents<string>;
     }
 
     if (isOtpValid) {

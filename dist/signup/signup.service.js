@@ -21,23 +21,25 @@ let SignupService = class SignupService {
         this.configService = configService;
         this.userCredentialService = userCredentialService;
         this.mailService = mailService;
+        this.otpDigitCount = Number(this.configService.get('TOTP_DIGIT_COUNT'));
+        this.otpValidWindowInSeconds = Number(this.configService.get('TOTP_VALIDITY_WINDOW_IN_SECONDS'));
+        this.totpSecret = this.configService.get('TOTP_SECRET');
     }
     async getServerOtpConfigs() {
         return {
-            otpDigitCount: Number(this.configService.get('TOTP_DIGIT_COUNT')),
+            otpDigitCount: this.otpDigitCount,
+            otpValidWindowInSeconds: this.otpValidWindowInSeconds,
         };
     }
     async generateOtpAndSendEmail(emailToRegister) {
-        const totpsecret = this.configService.get('TOTP_SECRET');
-        const window = Number(this.configService.get('TOTP_VALIDITY_WINDOW_IN_SECONDS'));
         const timeNowInMs = Date.now();
-        const expirationTimeInMs = window * 1000 + timeNowInMs;
+        const expirationTimeInMs = this.otpValidWindowInSeconds * 1000 + timeNowInMs;
         otplib_1.totp.options = {
-            digits: Number(this.configService.get('TOTP_DIGIT_COUNT')),
+            digits: this.otpDigitCount,
             epoch: timeNowInMs,
-            window,
+            window: this.otpValidWindowInSeconds,
         };
-        const newTotp = otplib_1.totp.generate(totpsecret);
+        const newTotp = otplib_1.totp.generate(this.totpSecret);
         const mailresult = await this.mailService.sendUserConfirmation(emailToRegister, newTotp);
         return {
             expirationTimeInMs,

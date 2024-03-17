@@ -11,6 +11,7 @@ export declare class SignupController {
     checkEmailExists(body: CheckEmailExistsDto, response: Response): Promise<void>;
     getServerOtpConfigs(): Promise<{
         otpDigitCount: number;
+        otpValidWindowInSeconds: number;
     }>;
     requestOtpForEmail(body: RequestOtpDto): Promise<void>;
     registerEmailWithOtp(body: RegisterEmailDto): Promise<void>;

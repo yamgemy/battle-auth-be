@@ -9,34 +9,44 @@ authenticator.options = { digits: 6 };
 
 @Injectable()
 export class SignupService {
+  private otpValidWindowInSeconds: number;
+  private otpDigitCount: number;
+  private totpSecret: string;
+
   constructor(
     private configService: ConfigService,
     private userCredentialService: UserCredentialsService,
     private mailService: MailService,
-  ) {}
+  ) {
+    this.otpDigitCount = Number(
+      this.configService.get<number>('TOTP_DIGIT_COUNT'),
+    );
+    this.otpValidWindowInSeconds = Number(
+      this.configService.get<number>('TOTP_VALIDITY_WINDOW_IN_SECONDS'),
+    );
+    this.totpSecret = this.configService.get<string>('TOTP_SECRET');
+  }
 
   async getServerOtpConfigs() {
     return {
-      otpDigitCount: Number(this.configService.get<number>('TOTP_DIGIT_COUNT')),
+      otpDigitCount: this.otpDigitCount,
+      otpValidWindowInSeconds: this.otpValidWindowInSeconds,
     };
   }
 
   async generateOtpAndSendEmail(emailToRegister: string) {
     //and send email
-    const totpsecret = this.configService.get<string>('TOTP_SECRET');
-    const window = Number(
-      this.configService.get<number>('TOTP_VALIDITY_WINDOW_IN_SECONDS'),
-    );
     const timeNowInMs = Date.now();
-    const expirationTimeInMs = window * 1000 + timeNowInMs;
+    const expirationTimeInMs =
+      this.otpValidWindowInSeconds * 1000 + timeNowInMs;
 
     totp.options = {
-      digits: Number(this.configService.get<number>('TOTP_DIGIT_COUNT')),
+      digits: this.otpDigitCount,
       epoch: timeNowInMs,
       //step: 30, //default value
-      window,
+      window: this.otpValidWindowInSeconds,
     };
-    const newTotp = totp.generate(totpsecret);
+    const newTotp = totp.generate(this.totpSecret);
     const mailresult = await this.mailService.sendUserConfirmation(
       emailToRegister,
       newTotp,

@@ -29,11 +29,11 @@ let UserCredentialsService = class UserCredentialsService {
             login_name: email,
         });
         if (user) {
-            throw new common_1.ForbiddenException({
+            return {
                 code: 1,
                 case: 'otp_valid_but_email_exists',
                 contents: 'otp valid but email already registered',
-            });
+            };
         }
         else {
             const hashedPw = await this.authService.hashData(password);

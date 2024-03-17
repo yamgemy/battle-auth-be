@@ -1,5 +1,0 @@
-export interface validateEmailOtpDto {
-    email: string;
-    password: string;
-    otp: string;
-}

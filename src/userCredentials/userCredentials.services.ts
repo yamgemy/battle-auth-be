@@ -1,9 +1,4 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  forwardRef,
-} from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { AuthService } from 'src/auth/auth.service';
@@ -29,11 +24,11 @@ export class UserCredentialsService {
       login_name: email,
     });
     if (user) {
-      throw new ForbiddenException({
+      return {
         code: 1,
         case: 'otp_valid_but_email_exists',
         contents: 'otp valid but email already registered',
-      } as ResponseithCodeCaseContents<string>);
+      } as ResponseithCodeCaseContents<string>;
     } else {
       const hashedPw = await this.authService.hashData(password);
       const newUser = new this.credsModel({

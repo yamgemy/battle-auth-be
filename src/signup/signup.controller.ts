@@ -2,8 +2,8 @@ import { Body, Controller, Get, HttpStatus, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { CheckEmailExistsDto } from './dto/check-email-exists.dto';
-import { RegisterEmailDto } from './dto/register-with-email.dto';
 import { RequestOtpDto } from './dto/request-otp-dto';
+import { ValidateEmailOtpDto } from './dto/validate-email-otp.dto';
 import { SignupService } from './signup.service';
 
 @Controller('signup')
@@ -38,12 +38,13 @@ export class SignupController {
     return await this.signupService.generateOtpAndSendEmail(email);
   }
 
-  @Post('registerEmailWithOtp')
-  async registerEmailWithOtp(
-    @Body() body: RegisterEmailDto,
+  @Post('validateEmailOtp')
+  async validateEmailOtp(
+    @Body() body: ValidateEmailOtpDto,
     // @Res() response: Response,
   ): Promise<void> {
-    const { email, password, otp } = body;
+    return await this.signupService.validateEmailOtp(body);
+    //    const { email, password, otp } = body;
     //todo
   }
 }

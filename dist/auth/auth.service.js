@@ -30,17 +30,12 @@ let AuthService = class AuthService {
         return this.jwtService.verifyAsync(token, { secret: refreshSecret });
     }
     async signIn(authDto, response) {
-        console.log('@authservice ', authDto);
         const user = await this.userCredentialsService.findUserByCreds(authDto);
-        const loginResultKey = 'details';
-        const loginResultCodeKey = 'code';
-        const loginTokensKey = 'tokens';
-        response[loginResultCodeKey] = 0;
-        response[loginResultKey] = 'unknown_error';
         if (!user) {
             throw new common_1.ForbiddenException({
-                [loginResultCodeKey]: 1,
-                [loginResultKey]: 'user_not_found',
+                code: 1,
+                case: 'user_not_found',
+                reasons: '',
             });
         }
         if (user) {
@@ -52,19 +47,27 @@ let AuthService = class AuthService {
                 });
                 await this.updateRefreshToken(user._id, tokens.refreshToken);
                 response.status(common_1.HttpStatus.OK).json({
-                    ['user_objectId']: user._id,
-                    [loginResultCodeKey]: 2,
-                    [loginResultKey]: 'username_and_password_match',
-                    [loginTokensKey]: tokens,
+                    code: 2,
+                    case: 'username_and_password_match',
+                    contents: {
+                        tokens,
+                        user_objectId: user.id,
+                    },
                 });
             }
             if (!passwordMatches) {
                 throw new common_1.ForbiddenException({
-                    [loginResultCodeKey]: 3,
-                    [loginResultKey]: 'user_found_password_incorrect',
+                    code: 3,
+                    case: 'user_found_password_incorrect',
+                    reasons: '',
                 });
             }
         }
+        throw new common_1.ForbiddenException({
+            code: 0,
+            case: 'unknown_error',
+            reasons: '',
+        });
     }
     hashData(data) {
         return argon2.hash(data);

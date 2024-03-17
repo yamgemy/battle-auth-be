@@ -46,6 +46,17 @@ let SignupService = class SignupService {
             ...mailresult,
         };
     }
+    async validateEmailOtp(body) {
+        const { email, password, otp } = body;
+        const isOtpValid = otplib_1.totp.verify({ token: otp, secret: this.totpSecret });
+        if (!isOtpValid) {
+        }
+        if (isOtpValid) {
+            const emailExists = await this.userCredentialService.findUserByCreds({
+                login_name: email,
+            });
+        }
+    }
 };
 exports.SignupService = SignupService;
 exports.SignupService = SignupService = __decorate([

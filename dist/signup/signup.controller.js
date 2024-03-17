@@ -32,8 +32,8 @@ let SignupController = class SignupController {
         const { email } = body;
         return await this.signupService.generateOtpAndSendEmail(email);
     }
-    async registerEmailWithOtp(body) {
-        const { email, password, otp } = body;
+    async validateEmailOtp(body) {
+        return await this.signupService.validateEmailOtp(body);
     }
 };
 exports.SignupController = SignupController;
@@ -59,12 +59,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], SignupController.prototype, "requestOtpForEmail", null);
 __decorate([
-    (0, common_1.Post)('registerEmailWithOtp'),
+    (0, common_1.Post)('validateEmailOtp'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], SignupController.prototype, "registerEmailWithOtp", null);
+], SignupController.prototype, "validateEmailOtp", null);
 exports.SignupController = SignupController = __decorate([
     (0, common_1.Controller)('signup'),
     __metadata("design:paramtypes", [userCredentials_services_1.UserCredentialsService,

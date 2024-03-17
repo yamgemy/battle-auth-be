@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { MailService } from 'src/mail/mail.service';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
+import { ValidateEmailOtpDto } from './dto/validate-email-otp.dto';
 export declare class SignupService {
     private configService;
     private userCredentialService;
@@ -14,4 +15,5 @@ export declare class SignupService {
         otpValidWindowInSeconds: number;
     }>;
     generateOtpAndSendEmail(emailToRegister: string): Promise<any>;
+    validateEmailOtp(body: ValidateEmailOtpDto): Promise<void>;
 }

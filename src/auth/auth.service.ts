@@ -9,6 +9,10 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { Response } from 'express';
 import { Types } from 'mongoose';
+import {
+  ErrorWithCodeCaseReasons,
+  ResponseithCodeCaseContents,
+} from 'src/declarations/http';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
 import { JwtContents } from './dto/jwtContents.dto';
@@ -39,22 +43,15 @@ export class AuthService {
   */
   async signIn(authDto: AuthDto, response: Response) {
     //'findUserByCreds' service only finds the user, and returns user pw from db
-    console.log('@authservice ', authDto);
     const user = await this.userCredentialsService.findUserByCreds(authDto);
-
-    const loginResultKey = 'details';
-    const loginResultCodeKey = 'code';
-    const loginTokensKey = 'tokens';
-    // const response = {} as Response;
-    response[loginResultCodeKey] = 0;
-    response[loginResultKey] = 'unknown_error';
 
     //case 1 no user found ({}, or null)
     if (!user) {
       throw new ForbiddenException({
-        [loginResultCodeKey]: 1,
-        [loginResultKey]: 'user_not_found',
-      });
+        code: 1,
+        case: 'user_not_found',
+        reasons: '',
+      } as ErrorWithCodeCaseReasons<string>);
     }
 
     if (user) {
@@ -70,20 +67,29 @@ export class AuthService {
         });
         await this.updateRefreshToken(user._id, tokens.refreshToken);
         response.status(HttpStatus.OK).json({
-          ['user_objectId']: user._id,
-          [loginResultCodeKey]: 2,
-          [loginResultKey]: 'username_and_password_match',
-          [loginTokensKey]: tokens,
-        });
+          code: 2,
+          case: 'username_and_password_match',
+          contents: {
+            tokens,
+            user_objectId: user.id,
+          },
+        } as ResponseithCodeCaseContents<object>);
       }
       //case 3 correct user & incorrect pw
       if (!passwordMatches) {
         throw new ForbiddenException({
-          [loginResultCodeKey]: 3,
-          [loginResultKey]: 'user_found_password_incorrect',
-        });
+          code: 3,
+          case: 'user_found_password_incorrect',
+          reasons: '',
+        } as ErrorWithCodeCaseReasons<string>);
       }
     }
+
+    throw new ForbiddenException({
+      code: 0,
+      case: 'unknown_error',
+      reasons: '',
+    } as ErrorWithCodeCaseReasons<string>);
   }
 
   hashData(data: string) {

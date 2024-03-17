@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { authenticator, totp } from 'otplib';
 import { MailService } from 'src/mail/mail.service';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
+import { ValidateEmailOtpDto } from './dto/validate-email-otp.dto';
 
 // setting
 authenticator.options = { digits: 6 };
@@ -56,5 +57,20 @@ export class SignupService {
       expirationTimeInMs,
       ...mailresult,
     };
+  }
+
+  async validateEmailOtp(body: ValidateEmailOtpDto) {
+    const { email, password, otp } = body;
+    const isOtpValid = totp.verify({ token: otp, secret: this.totpSecret });
+
+    if (!isOtpValid) {
+      //todo
+    }
+
+    if (isOtpValid) {
+      const emailExists = await this.userCredentialService.findUserByCreds({
+        login_name: email,
+      });
+    }
   }
 }

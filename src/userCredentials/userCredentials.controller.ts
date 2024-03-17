@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -20,7 +21,10 @@ export class UserCrendtialsController {
 
   @UseGuards(AuthGuard)
   @Get()
-  async listAll(@Res() response: Response): Promise<void> {
+  async listAll(
+    @Res() response: Response,
+    @Req() request: Request,
+  ): Promise<void> {
     const result = await this.userCredentialsService.getAllUsersCreds();
     response.status(HttpStatus.OK).json(result);
   }
@@ -30,8 +34,10 @@ export class UserCrendtialsController {
   async userCreds(
     @Param('id') id: Types.ObjectId | string,
     @Res() response: Response,
+    @Req() request: Request,
   ): Promise<void> {
     const result = await this.userCredentialsService.findUserById(id);
+    console.log('@userCreds get', result);
     response.status(HttpStatus.OK).json(result);
   }
 

@@ -25,7 +25,7 @@ let AuthGuard = class AuthGuard {
             return true;
         }
         catch (error) {
-            throw new common_1.ForbiddenException(error.message || 'Token invalid error thrown at AuthGuard');
+            throw new common_1.ForbiddenException(error.message || 'access jwt expired', '');
         }
     }
     extractBearerTokenFromHeader(request) {

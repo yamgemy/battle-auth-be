@@ -20,7 +20,11 @@ let AuthController = class AuthController {
         this.authService = authService;
     }
     signin(data, response) {
+        console.log('singin body', data);
         return this.authService.signIn(data, response);
+    }
+    getNewAccessToken(data, response) {
+        return this.authService.renewAccessToken(data);
     }
 };
 exports.AuthController = AuthController;
@@ -32,6 +36,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "signin", null);
+__decorate([
+    (0, common_1.Post)('newAccess'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "getNewAccessToken", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])

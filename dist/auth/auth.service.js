@@ -21,25 +21,21 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
         this.userCredentialsService = userCredentialsService;
     }
-    async verifyAccessToken(token) {
+    verifyAccessToken(token) {
         const accessSecret = this.configService.get('JWT_ACCESS_SECRET');
-        return await this.jwtService.verifyAsync(token, { secret: accessSecret });
+        return this.jwtService.verifyAsync(token, { secret: accessSecret });
     }
-    async verifyRefreshToken(token) {
+    verifyRefreshToken(token) {
         const refreshSecret = this.configService.get('JWT_REFRESH_SECRET');
-        return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
+        return this.jwtService.verifyAsync(token, { secret: refreshSecret });
     }
     async signIn(authDto, response) {
         const user = await this.userCredentialsService.findUserByCreds(authDto);
-        const loginResultKey = 'details';
-        const loginResultCodeKey = 'code';
-        const loginTokensKey = 'tokens';
-        response[loginResultCodeKey] = 0;
-        response[loginResultKey] = 'unknown_error';
         if (!user) {
-            response.status(common_1.HttpStatus.FORBIDDEN).json({
-                [loginResultCodeKey]: 1,
-                [loginResultKey]: 'user_not_found',
+            throw new common_1.ForbiddenException({
+                code: 1,
+                case: 'user_not_found',
+                reasons: '',
             });
         }
         if (user) {
@@ -51,27 +47,34 @@ let AuthService = class AuthService {
                 });
                 await this.updateRefreshToken(user._id, tokens.refreshToken);
                 response.status(common_1.HttpStatus.OK).json({
-                    ['user_objectId']: user._id,
-                    [loginResultCodeKey]: 2,
-                    [loginResultKey]: 'username_and_password_match',
-                    [loginTokensKey]: tokens,
+                    code: 2,
+                    case: 'username_and_password_match',
+                    contents: {
+                        tokens,
+                        user_objectId: user.id,
+                    },
                 });
             }
             if (!passwordMatches) {
-                response.status(common_1.HttpStatus.FORBIDDEN).json({
-                    [loginResultCodeKey]: 3,
-                    [loginResultKey]: 'user_found_password_incorrect',
+                throw new common_1.ForbiddenException({
+                    code: 3,
+                    case: 'user_found_password_incorrect',
+                    reasons: '',
                 });
             }
         }
+        throw new common_1.ForbiddenException({
+            code: 0,
+            case: 'unknown_error',
+            reasons: '',
+        });
     }
     hashData(data) {
         return argon2.hash(data);
     }
     async updateRefreshToken(userId, refreshToken) {
-        const hashedRefreshToken = await this.hashData(refreshToken);
         await this.userCredentialsService.update(userId, {
-            refreshToken: hashedRefreshToken,
+            refreshToken: refreshToken,
         });
     }
     async getAccessToken({ userId, login_name }) {
@@ -101,6 +104,28 @@ let AuthService = class AuthService {
             accessToken,
             refreshToken,
         };
+    }
+    async renewAccessToken({ refreshToken }) {
+        try {
+            console.log('@renewAccessToken, ', refreshToken);
+            const decoded = await this.verifyRefreshToken(refreshToken);
+            console.log('@renewAccessToken', decoded);
+            const user = await this.userCredentialsService.findUserById(decoded.userId);
+            if (user) {
+                return {
+                    newAccessToken: await this.getAccessToken({
+                        userId: decoded.userId,
+                        login_name: decoded.login_name,
+                    }),
+                };
+            }
+            else {
+                throw new common_1.UnauthorizedException('Invalid refresh token submitted from client');
+            }
+        }
+        catch (e) {
+            console.log('@renewAccessToken e', e);
+        }
     }
 };
 exports.AuthService = AuthService;

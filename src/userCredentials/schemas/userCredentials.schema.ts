@@ -8,7 +8,7 @@ export class UserCredentials {
   // @Prop()
   // display_name: string; //not here; locate to userProfile Module
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true, dropDups: false })
   login_name: string;
 
   @Prop({ required: true })

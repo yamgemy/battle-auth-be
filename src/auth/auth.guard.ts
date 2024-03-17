@@ -22,9 +22,16 @@ export class AuthGuard implements CanActivate {
       request['decodedData'] = payload;
       return true;
     } catch (error) {
-      throw new ForbiddenException(
-        error.message || 'Token invalid error thrown at AuthGuard',
-      );
+      // throw error;
+      /*
+      this gives client a response in the following format:
+      {
+          "message": "some message",
+          "error": "Forbidden",
+          "statusCode": 403
+      }
+      */
+      throw new ForbiddenException(error.message || 'access jwt expired', '');
     }
   }
 

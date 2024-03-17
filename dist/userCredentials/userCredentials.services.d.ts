@@ -24,16 +24,20 @@
 /// <reference types="mongoose/types/inferschematype" />
 import { Model, Types } from 'mongoose';
 import { AuthService } from 'src/auth/auth.service';
+import { ResponseWithCodeCaseContents } from 'src/declarations/http';
+import { CheckEmailExistsDto } from 'src/signup/dto/check-email-exists.dto';
 import { AuthUserDto } from './dto/auth-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserCredentials } from './schemas/userCredentials.schema';
 export declare class UserCredentialsService {
     private authService;
     private credsModel;
     constructor(authService: AuthService, credsModel: Model<UserCredentials>);
+    createUser(body: CreateUserDto): Promise<ResponseWithCodeCaseContents<any>>;
     getAllUsersCreds(): Promise<UserCredentials[]>;
     findUserById(userId: Types.ObjectId | string): Promise<UserCredentials>;
-    findUserByCreds(userLoginDto: AuthUserDto): Promise<import("mongoose").Document<unknown, {}, UserCredentials> & UserCredentials & {
+    findUserByCreds(userLoginDto: AuthUserDto | CheckEmailExistsDto): Promise<import("mongoose").Document<unknown, {}, UserCredentials> & UserCredentials & {
         _id: Types.ObjectId;
     }>;
     update(id: Types.ObjectId | string, updateUserDto: UpdateUserDto): Promise<import("mongoose").Document<unknown, {}, UserCredentials> & UserCredentials & {

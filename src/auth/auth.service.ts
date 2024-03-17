@@ -1,16 +1,22 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { Response } from 'express';
 import { Types } from 'mongoose';
+import {
+  ErrorWithCodeCaseReasons,
+  ResponseithCodeCaseContents,
+} from 'src/declarations/http';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
-
-interface JwtContents {
-  userId: Types.ObjectId | string;
-  login_name: string;
-}
+import { JwtContents } from './dto/jwtContents.dto';
+import { RenewAccessDto } from './dto/renewAcess.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,14 +28,14 @@ export class AuthService {
 
   //TODO CREATE USER
 
-  async verifyAccessToken(token: string): Promise<JwtContents> {
+  verifyAccessToken(token: string): Promise<JwtContents> {
     const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
-    return await this.jwtService.verifyAsync(token, { secret: accessSecret });
+    return this.jwtService.verifyAsync(token, { secret: accessSecret });
   }
 
-  async verifyRefreshToken(token: string): Promise<JwtContents> {
+  verifyRefreshToken(token: string): Promise<JwtContents> {
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
-    return await this.jwtService.verifyAsync(token, { secret: refreshSecret });
+    return this.jwtService.verifyAsync(token, { secret: refreshSecret });
   }
 
   /*
@@ -37,22 +43,15 @@ export class AuthService {
   */
   async signIn(authDto: AuthDto, response: Response) {
     //'findUserByCreds' service only finds the user, and returns user pw from db
-
     const user = await this.userCredentialsService.findUserByCreds(authDto);
-
-    const loginResultKey = 'details';
-    const loginResultCodeKey = 'code';
-    const loginTokensKey = 'tokens';
-    // const response = {} as Response;
-    response[loginResultCodeKey] = 0;
-    response[loginResultKey] = 'unknown_error';
 
     //case 1 no user found ({}, or null)
     if (!user) {
-      response.status(HttpStatus.FORBIDDEN).json({
-        [loginResultCodeKey]: 1,
-        [loginResultKey]: 'user_not_found',
-      });
+      throw new ForbiddenException({
+        code: 1,
+        case: 'user_not_found',
+        reasons: '',
+      } as ErrorWithCodeCaseReasons<string>);
     }
 
     if (user) {
@@ -68,30 +67,39 @@ export class AuthService {
         });
         await this.updateRefreshToken(user._id, tokens.refreshToken);
         response.status(HttpStatus.OK).json({
-          ['user_objectId']: user._id,
-          [loginResultCodeKey]: 2,
-          [loginResultKey]: 'username_and_password_match',
-          [loginTokensKey]: tokens,
-        });
+          code: 2,
+          case: 'username_and_password_match',
+          contents: {
+            tokens,
+            user_objectId: user.id,
+          },
+        } as ResponseithCodeCaseContents<object>);
       }
       //case 3 correct user & incorrect pw
       if (!passwordMatches) {
-        response.status(HttpStatus.FORBIDDEN).json({
-          [loginResultCodeKey]: 3,
-          [loginResultKey]: 'user_found_password_incorrect',
-        });
+        throw new ForbiddenException({
+          code: 3,
+          case: 'user_found_password_incorrect',
+          reasons: '',
+        } as ErrorWithCodeCaseReasons<string>);
       }
     }
+
+    throw new ForbiddenException({
+      code: 0,
+      case: 'unknown_error',
+      reasons: '',
+    } as ErrorWithCodeCaseReasons<string>);
   }
 
   hashData(data: string) {
     return argon2.hash(data);
   }
 
+  //do not hash refresh token. argon2 hashing is irreversible
   async updateRefreshToken(userId: Types.ObjectId, refreshToken: string) {
-    const hashedRefreshToken = await this.hashData(refreshToken);
     await this.userCredentialsService.update(userId, {
-      refreshToken: hashedRefreshToken,
+      refreshToken: refreshToken,
     });
   }
 
@@ -131,5 +139,30 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async renewAccessToken({ refreshToken }: RenewAccessDto) {
+    try {
+      console.log('@renewAccessToken, ', refreshToken);
+      const decoded = await this.verifyRefreshToken(refreshToken);
+      console.log('@renewAccessToken', decoded);
+      const user = await this.userCredentialsService.findUserById(
+        decoded.userId,
+      );
+      if (user) {
+        return {
+          newAccessToken: await this.getAccessToken({
+            userId: decoded.userId,
+            login_name: decoded.login_name,
+          }),
+        };
+      } else {
+        throw new UnauthorizedException(
+          'Invalid refresh token submitted from client',
+        );
+      }
+    } catch (e) {
+      console.log('@renewAccessToken e', e);
+    }
   }
 }

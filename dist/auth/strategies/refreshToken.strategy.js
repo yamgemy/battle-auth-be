@@ -24,6 +24,7 @@ let RefreshTokenStrategy = class RefreshTokenStrategy extends (0, passport_1.Pas
         this.configService = configService;
     }
     validate(req, payload) {
+        console.log('@asfdg', payload);
         const refreshToken = req.get('Authorization').replace('Bearer', '').trim();
         return { ...payload, refreshToken };
     }

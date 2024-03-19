@@ -42,7 +42,8 @@ export class SignupController {
     // @Res() response: Response,
   ): Promise<ResponseWithCodeCaseContents<any>> {
     const { email } = body;
-    return await this.signupService.generateOtpAndSendEmail(email);
+    console.log('@requestOtpForEmail', body);
+    return this.signupService.generateOtpAndSendEmail(email);
   }
 
   @Post('validateEmailOtp') //leads to registration if valid otp

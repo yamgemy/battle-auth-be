@@ -47,7 +47,7 @@ let SocketGateway = SocketGateway_1 = class SocketGateway {
     async handleConnection(client) {
         try {
             console.log('@SocketGateway handleConnection, client:', client.id);
-            const accessToken = client.handshake.headers.authorization.split(' ')[1];
+            const accessToken = client.handshake.auth.token;
             const payload = await this.authService.verifyAccessToken(accessToken);
             const user = await this.userCredentialsService.findUserById(payload.userId);
             !user && client.disconnect();
@@ -68,12 +68,23 @@ let SocketGateway = SocketGateway_1 = class SocketGateway {
         console.log('handleEvent eventsFromClient incoming data:', data);
         client.send('eventsEmitFromServer', 'SocketGateway says hello back');
     }
+    handleEventEmitTest123(data, client) {
+        console.log('handleEvent emitTest123 incoming data:', data);
+        client.emit('ack', { ack: true, timeStamp: data.timeStamp });
+        return data;
+    }
 };
 exports.SocketGateway = SocketGateway;
 __decorate([
     (0, websockets_1.WebSocketServer)(),
     __metadata("design:type", socket_io_1.Server)
 ], SocketGateway.prototype, "server", void 0);
+__decorate([
+    (0, common_1.UseGuards)(socket_jwtGuard_1.SocketJwtGuard),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [socket_io_1.Socket]),
+    __metadata("design:returntype", Promise)
+], SocketGateway.prototype, "handleConnection", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('events'),
     __metadata("design:type", Function),
@@ -96,6 +107,15 @@ __decorate([
     __metadata("design:paramtypes", [String, socket_io_1.Socket]),
     __metadata("design:returntype", void 0)
 ], SocketGateway.prototype, "handleEvent", null);
+__decorate([
+    (0, common_1.UseGuards)(socket_jwtGuard_1.SocketJwtGuard),
+    (0, websockets_1.SubscribeMessage)('emitTest123'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, socket_io_1.Socket]),
+    __metadata("design:returntype", void 0)
+], SocketGateway.prototype, "handleEventEmitTest123", null);
 exports.SocketGateway = SocketGateway = SocketGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)(socketGatewayOptions),
     __metadata("design:paramtypes", [config_1.ConfigService,

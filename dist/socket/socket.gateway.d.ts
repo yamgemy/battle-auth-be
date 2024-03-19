@@ -17,4 +17,5 @@ export declare class SocketGateway implements OnGatewayInit, OnGatewayConnection
     findAll(): Observable<WsResponse<number>>;
     identity(data: number): Promise<number>;
     handleEvent(data: string, client: Socket): void;
+    handleEventEmitTest123(data: Record<string, any>, client: Socket): Record<string, any>;
 }

@@ -35,7 +35,8 @@ let SignupController = class SignupController {
     }
     async requestOtpForEmail(body) {
         const { email } = body;
-        return await this.signupService.generateOtpAndSendEmail(email);
+        console.log('@requestOtpForEmail', body);
+        return this.signupService.generateOtpAndSendEmail(email);
     }
     async validateEmailOtp(body) {
         return await this.signupService.validateEmailOtp(body);

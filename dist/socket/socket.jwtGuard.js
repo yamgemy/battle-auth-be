@@ -21,10 +21,12 @@ let SocketJwtGuard = class SocketJwtGuard {
         this.userCredentialsService = userCredentialsService;
     }
     async canActivate(context) {
-        const bearerToken = context.args[0].handshake.headers.authorization.split(' ')[1];
+        const wsContext = context.switchToWs();
+        const client = wsContext.getClient();
+        const bearerToken = client.handshake.auth?.token;
+        console.log('@socket jwtGuard canActivate', bearerToken);
         try {
             const decoded = (await this.authService.verifyAccessToken(bearerToken));
-            console.log(decoded);
             return new Promise(async (resolve, reject) => {
                 const user = await this.userCredentialsService.findUserById(decoded.userId);
                 if (user) {
@@ -35,8 +37,12 @@ let SocketJwtGuard = class SocketJwtGuard {
                 }
             });
         }
-        catch (ex) {
-            console.log('@SocketJwtGuard exeception: ', ex);
+        catch (err) {
+            if (err.name === 'TokenExpiredError' || err.message.includes('expired')) {
+                console.error('JWT expired:', err);
+                client.emit('jwtExpired');
+                client.disconnect(true);
+            }
             return false;
         }
     }

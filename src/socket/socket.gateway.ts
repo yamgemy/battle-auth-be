@@ -52,13 +52,14 @@ export class SocketGateway
     this.logger.log('SocketGateway initialized, server:', server);
   }
 
+  @UseGuards(SocketJwtGuard)
   async handleConnection(client: Socket): Promise<void> {
     // const { sockets } = this.server.sockets;
     // console.log('@SocketGateway handleConnection sockets', sockets);
 
     try {
       console.log('@SocketGateway handleConnection, client:', client.id);
-      const accessToken = client.handshake.headers.authorization.split(' ')[1];
+      const accessToken = client.handshake.auth.token;
       const payload = await this.authService.verifyAccessToken(accessToken);
       const user = await this.userCredentialsService.findUserById(
         payload.userId,
@@ -93,5 +94,16 @@ export class SocketGateway
     console.log('handleEvent eventsFromClient incoming data:', data);
     client.send('eventsEmitFromServer', 'SocketGateway says hello back');
     // return data;
+  }
+
+  @UseGuards(SocketJwtGuard)
+  @SubscribeMessage('emitTest123')
+  handleEventEmitTest123(
+    @MessageBody() data: Record<string, any>,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log('handleEvent emitTest123 incoming data:', data);
+    client.emit('ack', { ack: true, timeStamp: data.timeStamp });
+    return data;
   }
 }

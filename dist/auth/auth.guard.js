@@ -20,9 +20,12 @@ let AuthGuard = class AuthGuard {
         const request = context.switchToHttp().getRequest();
         const token = this.extractBearerTokenFromHeader(request);
         try {
-            const payload = await this.authService.verifyAccessToken(token);
-            request['decodedData'] = payload;
-            return true;
+            const { isTokenValid, jwtClaims, reasons } = await this.authService.verifyToken(token, 'A');
+            if (isTokenValid) {
+                request['decodedData'] = jwtClaims;
+                return true;
+            }
+            throw new common_1.ForbiddenException('invalid jwt', reasons);
         }
         catch (error) {
             throw new common_1.ForbiddenException(error.message || 'access jwt expired', '');

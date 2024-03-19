@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
 import { Socket } from 'socket.io'; // Assuming you're using Socket.IO
 import { AuthService } from 'src/auth/auth.service';
-import { JwtContents } from 'src/auth/dto/jwtContents.dto';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 /**
  * source:
@@ -31,18 +30,13 @@ export class SocketJwtGuard implements CanActivate {
     console.log('@socket jwtGuard canActivate', bearerToken);
     // wsContext.args[0].handshake.headers.authorization.split(' ')[1];
     try {
-      const decoded = (await this.authService.verifyAccessToken(
-        bearerToken,
-      )) as JwtContents;
+      const { isTokenValid, jwtClaims, user, reasons } =
+        await this.authService.verifyToken(bearerToken, 'A');
       return new Promise(async (resolve, reject) => {
-        const user = await this.userCredentialsService.findUserById(
-          decoded.userId,
-        );
-        if (user) {
+        if (isTokenValid && jwtClaims && user) {
           resolve(user);
-        } else {
-          reject(false);
         }
+        reject(reasons);
       });
     } catch (err) {
       if (err.name === 'TokenExpiredError' || err.message.includes('expired')) {

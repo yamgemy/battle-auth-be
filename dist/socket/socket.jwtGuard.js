@@ -26,15 +26,12 @@ let SocketJwtGuard = class SocketJwtGuard {
         const bearerToken = client.handshake.auth?.token;
         console.log('@socket jwtGuard canActivate', bearerToken);
         try {
-            const decoded = (await this.authService.verifyAccessToken(bearerToken));
+            const { isTokenValid, jwtClaims, user, reasons } = await this.authService.verifyToken(bearerToken, 'A');
             return new Promise(async (resolve, reject) => {
-                const user = await this.userCredentialsService.findUserById(decoded.userId);
-                if (user) {
+                if (isTokenValid && jwtClaims && user) {
                     resolve(user);
                 }
-                else {
-                    reject(false);
-                }
+                reject(reasons);
             });
         }
         catch (err) {

@@ -26,23 +26,30 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { Types } from 'mongoose';
+import { UserCredentials } from 'src/userCredentials/schemas/userCredentials.schema';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
-import { JwtContents } from './dto/jwtContents.dto';
+import { JwtClaims } from './dto/jwtContents.dto';
 import { RenewAccessDto } from './dto/renewAcess.dto';
+type tokenType = 'A' | 'R';
+interface TokenVerifyResult {
+    isTokenValid: boolean;
+    reasons?: string;
+    jwtClaims?: JwtClaims | null;
+    user?: UserCredentials;
+}
 export declare class AuthService {
     private configService;
     private jwtService;
     private userCredentialsService;
     constructor(configService: ConfigService, jwtService: JwtService, userCredentialsService: UserCredentialsService);
-    verifyAccessToken(token: string): Promise<JwtContents>;
-    verifyRefreshToken(token: string): Promise<JwtContents>;
+    verifyToken(token: string, type: tokenType): Promise<TokenVerifyResult>;
     signIn(authDto: AuthDto, response: Response): Promise<void>;
     hashData(data: string): Promise<string>;
     updateRefreshToken(userId: Types.ObjectId, refreshToken: string): Promise<void>;
-    getAccessToken({ userId, login_name }: JwtContents): Promise<string>;
-    getRefreshToken({ userId, login_name }: JwtContents): Promise<string>;
-    getTokens({ userId, login_name }: JwtContents): Promise<{
+    getAccessToken(userId: Types.ObjectId | string): Promise<string>;
+    getRefreshToken(userId: Types.ObjectId | string): Promise<string>;
+    getTokens(userId: Types.ObjectId | string): Promise<{
         accessToken: string;
         refreshToken: string;
     }>;
@@ -50,3 +57,4 @@ export declare class AuthService {
         newAccessToken: string;
     }>;
 }
+export {};

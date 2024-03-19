@@ -20,6 +20,7 @@ import { JwtClaims } from './dto/jwtContents.dto';
 import { RenewAccessDto } from './dto/renewAcess.dto';
 
 type tokenType = 'A' | 'R'; //acccess or refresh
+
 interface TokenVerifyResult {
   isTokenValid: boolean;
   reasons?: string;

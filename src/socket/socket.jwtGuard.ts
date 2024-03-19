@@ -35,8 +35,9 @@ export class SocketJwtGuard implements CanActivate {
       return new Promise(async (resolve, reject) => {
         if (isTokenValid && jwtClaims && user) {
           resolve(user);
+        } else {
+          reject(reasons);
         }
-        reject(reasons);
       });
     } catch (err) {
       if (err.name === 'TokenExpiredError' || err.message.includes('expired')) {

@@ -31,7 +31,9 @@ let SocketJwtGuard = class SocketJwtGuard {
                 if (isTokenValid && jwtClaims && user) {
                     resolve(user);
                 }
-                reject(reasons);
+                else {
+                    reject(reasons);
+                }
             });
         }
         catch (err) {

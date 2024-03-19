@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { Response } from 'express';
 import { Types } from 'mongoose';
@@ -13,10 +13,20 @@ import {
   ErrorWithCodeCaseReasons,
   ResponseWithCodeCaseContents,
 } from 'src/declarations/http';
+import { UserCredentials } from 'src/userCredentials/schemas/userCredentials.schema';
 import { UserCredentialsService } from 'src/userCredentials/userCredentials.services';
 import { AuthDto } from './dto/auth.dto';
-import { JwtContents } from './dto/jwtContents.dto';
+import { JwtClaims } from './dto/jwtContents.dto';
 import { RenewAccessDto } from './dto/renewAcess.dto';
+
+type tokenType = 'A' | 'R'; //acccess or refresh
+
+interface TokenVerifyResult {
+  isTokenValid: boolean;
+  reasons?: string;
+  jwtClaims?: JwtClaims | null;
+  user?: UserCredentials;
+}
 
 @Injectable()
 export class AuthService {
@@ -26,20 +36,56 @@ export class AuthService {
     private userCredentialsService: UserCredentialsService,
   ) {}
 
-  //TODO CREATE USER
-
-  verifyAccessToken(token: string): Promise<JwtContents> {
-    const accessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
-    return this.jwtService.verifyAsync(token, { secret: accessSecret });
-  }
-
-  verifyRefreshToken(token: string): Promise<JwtContents> {
-    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
-    return this.jwtService.verifyAsync(token, { secret: refreshSecret });
+  async verifyToken(
+    token: string,
+    type: tokenType,
+  ): Promise<TokenVerifyResult> {
+    let secret = null;
+    if (type === 'A') {
+      secret = this.configService.get<string>('JWT_ACCESS_SECRET');
+    }
+    if (type === 'R') {
+      secret = this.configService.get<string>('JWT_REFRESH_SECRET');
+    }
+    if (!secret) {
+      throw new JsonWebTokenError(
+        'No matching type of token passed in at verifyToken',
+      );
+    }
+    const jwtClaims = await this.jwtService.verifyAsync(token, { secret });
+    // console.log('@verifyToken got jwtClaims, ', jwtClaims);
+    const { iss, aud, sub } = jwtClaims as JwtClaims;
+    const user = await this.userCredentialsService.findUserById(sub);
+    if (!user) {
+      return {
+        isTokenValid: false,
+        reasons: 'token passed verify but user not found from database',
+        jwtClaims: null,
+      };
+    }
+    if (iss !== this.configService.get<string>('JWT_ISSUER')) {
+      return {
+        isTokenValid: false,
+        reasons: 'token passed verify but jwt issuer does not match',
+        jwtClaims: null,
+      };
+    }
+    if (aud !== this.configService.get<string>('JWT_AUDIENCE')) {
+      return {
+        isTokenValid: false,
+        reasons: 'token passed verify but jwt audience does not match',
+        jwtClaims: null,
+      };
+    }
+    return {
+      isTokenValid: true,
+      jwtClaims,
+      user,
+    };
   }
 
   /*
-  signIn should return access and refreh tokens
+  signIn should return access and refresh tokens
   */
   async signIn(authDto: AuthDto, response: Response) {
     //'findUserByCreds' service only finds the user, and returns user pw from db
@@ -61,10 +107,7 @@ export class AuthService {
         authDto.password,
       );
       if (passwordMatches) {
-        const tokens = await this.getTokens({
-          userId: user._id,
-          login_name: user.login_name,
-        });
+        const tokens = await this.getTokens(user._id);
         await this.updateRefreshToken(user._id, tokens.refreshToken);
         response.status(HttpStatus.OK).json({
           code: 2,
@@ -103,11 +146,13 @@ export class AuthService {
     });
   }
 
-  async getAccessToken({ userId, login_name }: JwtContents) {
+  async getAccessToken(userId: Types.ObjectId | string) {
     return await this.jwtService.signAsync(
       {
-        userId,
-        login_name,
+        sub: userId,
+        iss: this.configService.get<string>('JWT_ISSUER'),
+        aud: this.configService.get<string>('JWT_AUDIENCE'),
+        iat: Date.now(),
       },
       {
         secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
@@ -116,11 +161,13 @@ export class AuthService {
     );
   }
 
-  async getRefreshToken({ userId, login_name }: JwtContents) {
+  async getRefreshToken(userId: Types.ObjectId | string) {
     return await this.jwtService.signAsync(
       {
-        userId,
-        login_name,
+        sub: userId,
+        iss: this.configService.get<string>('JWT_ISSUER'),
+        aud: this.configService.get<string>('JWT_AUDIENCE'),
+        iat: Date.now(),
       },
       {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
@@ -129,10 +176,10 @@ export class AuthService {
     );
   }
 
-  async getTokens({ userId, login_name }: JwtContents) {
+  async getTokens(userId: Types.ObjectId | string) {
     const [accessToken, refreshToken] = await Promise.all([
-      this.getAccessToken({ userId, login_name }),
-      this.getRefreshToken({ userId, login_name }),
+      this.getAccessToken(userId),
+      this.getRefreshToken(userId),
     ]);
 
     return {
@@ -144,17 +191,13 @@ export class AuthService {
   async renewAccessToken({ refreshToken }: RenewAccessDto) {
     try {
       console.log('@renewAccessToken, ', refreshToken);
-      const decoded = await this.verifyRefreshToken(refreshToken);
-      console.log('@renewAccessToken', decoded);
-      const user = await this.userCredentialsService.findUserById(
-        decoded.userId,
+      const { isTokenValid, jwtClaims } = await this.verifyToken(
+        refreshToken,
+        'R',
       );
-      if (user) {
+      if (isTokenValid && jwtClaims) {
         return {
-          newAccessToken: await this.getAccessToken({
-            userId: decoded.userId,
-            login_name: decoded.login_name,
-          }),
+          newAccessToken: await this.getAccessToken(jwtClaims.sub),
         };
       } else {
         throw new UnauthorizedException(

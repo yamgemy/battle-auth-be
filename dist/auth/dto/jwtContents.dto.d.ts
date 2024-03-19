@@ -23,7 +23,10 @@
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
 import { Types } from 'mongoose';
-export interface JwtContents {
-    userId: Types.ObjectId | string;
-    login_name: string;
+export interface JwtClaims {
+    iss: string;
+    aud: string;
+    sub: Types.ObjectId | string;
+    exp: number;
+    iat: number;
 }

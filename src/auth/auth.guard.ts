@@ -16,11 +16,15 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractBearerTokenFromHeader(request);
     try {
-      const payload = await this.authService.verifyAccessToken(token);
+      const { isTokenValid, jwtClaims, reasons } =
+        await this.authService.verifyToken(token, 'A');
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request['decodedData'] = payload;
-      return true;
+      if (isTokenValid) {
+        request['decodedData'] = jwtClaims;
+        return true;
+      }
+      throw new ForbiddenException('invalid jwt', reasons);
     } catch (error) {
       // throw error;
       /*

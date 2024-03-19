@@ -36,10 +36,7 @@ export class UserCredentialsService {
         password: hashedPw,
       });
 
-      const tokens = await this.authService.getTokens({
-        login_name: email,
-        userId: newUser._id,
-      });
+      const tokens = await this.authService.getTokens(newUser._id);
 
       newUser.refreshToken = tokens.refreshToken;
       console.log('@UserCredentialsService: createUser result', newUser);

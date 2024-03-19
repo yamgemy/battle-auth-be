@@ -60,16 +60,18 @@ export class SocketGateway
     try {
       console.log('@SocketGateway handleConnection, client:', client.id);
       const accessToken = client.handshake.auth.token;
-      const payload = await this.authService.verifyAccessToken(accessToken);
-      const user = await this.userCredentialsService.findUserById(
-        payload.userId,
+      const { isTokenValid } = await this.authService.verifyToken(
+        accessToken,
+        'A',
       );
-      !user && client.disconnect();
-      const isClientConnected = client.connected;
-      console.log(
-        '@SocketGateway handleConnection connected',
-        isClientConnected,
-      );
+      if (!isTokenValid) {
+        client.disconnect();
+        const isClientConnected = client.connected;
+        console.log(
+          '@SocketGateway handleConnection connected',
+          isClientConnected,
+        );
+      }
     } catch (wsConnectionError) {
       console.log('@SocketGateway handleConnection error', wsConnectionError);
     }

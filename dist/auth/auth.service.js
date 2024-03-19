@@ -21,13 +21,46 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
         this.userCredentialsService = userCredentialsService;
     }
-    verifyAccessToken(token) {
-        const accessSecret = this.configService.get('JWT_ACCESS_SECRET');
-        return this.jwtService.verifyAsync(token, { secret: accessSecret });
-    }
-    verifyRefreshToken(token) {
-        const refreshSecret = this.configService.get('JWT_REFRESH_SECRET');
-        return this.jwtService.verifyAsync(token, { secret: refreshSecret });
+    async verifyToken(token, type) {
+        let secret = null;
+        if (type === 'A') {
+            secret = this.configService.get('JWT_ACCESS_SECRET');
+        }
+        if (type === 'R') {
+            secret = this.configService.get('JWT_REFRESH_SECRET');
+        }
+        if (!secret) {
+            throw new jwt_1.JsonWebTokenError('No matching type of token passed in at verifyToken');
+        }
+        const jwtClaims = await this.jwtService.verifyAsync(token, { secret });
+        const { iss, aud, sub } = jwtClaims;
+        const user = await this.userCredentialsService.findUserById(sub);
+        if (!user) {
+            return {
+                isTokenValid: false,
+                reasons: 'token passed verify but user not found from database',
+                jwtClaims: null,
+            };
+        }
+        if (iss !== this.configService.get('JWT_ISSUER')) {
+            return {
+                isTokenValid: false,
+                reasons: 'token passed verify but jwt issuer does not match',
+                jwtClaims: null,
+            };
+        }
+        if (aud !== this.configService.get('JWT_AUDIENCE')) {
+            return {
+                isTokenValid: false,
+                reasons: 'token passed verify but jwt audience does not match',
+                jwtClaims: null,
+            };
+        }
+        return {
+            isTokenValid: true,
+            jwtClaims,
+            user,
+        };
     }
     async signIn(authDto, response) {
         const user = await this.userCredentialsService.findUserByCreds(authDto);
@@ -41,10 +74,7 @@ let AuthService = class AuthService {
         if (user) {
             const passwordMatches = await argon2.verify(user.password, authDto.password);
             if (passwordMatches) {
-                const tokens = await this.getTokens({
-                    userId: user._id,
-                    login_name: user.login_name,
-                });
+                const tokens = await this.getTokens(user._id);
                 await this.updateRefreshToken(user._id, tokens.refreshToken);
                 response.status(common_1.HttpStatus.OK).json({
                     code: 2,
@@ -77,28 +107,32 @@ let AuthService = class AuthService {
             refreshToken: refreshToken,
         });
     }
-    async getAccessToken({ userId, login_name }) {
+    async getAccessToken(userId) {
         return await this.jwtService.signAsync({
-            userId,
-            login_name,
+            sub: userId,
+            iss: this.configService.get('JWT_ISSUER'),
+            aud: this.configService.get('JWT_AUDIENCE'),
+            iat: Date.now(),
         }, {
             secret: this.configService.get('JWT_ACCESS_SECRET'),
             expiresIn: this.configService.get('JWT_ACCESS_TIME'),
         });
     }
-    async getRefreshToken({ userId, login_name }) {
+    async getRefreshToken(userId) {
         return await this.jwtService.signAsync({
-            userId,
-            login_name,
+            sub: userId,
+            iss: this.configService.get('JWT_ISSUER'),
+            aud: this.configService.get('JWT_AUDIENCE'),
+            iat: Date.now(),
         }, {
             secret: this.configService.get('JWT_REFRESH_SECRET'),
             expiresIn: this.configService.get('JWT_REFRESH_TIME'),
         });
     }
-    async getTokens({ userId, login_name }) {
+    async getTokens(userId) {
         const [accessToken, refreshToken] = await Promise.all([
-            this.getAccessToken({ userId, login_name }),
-            this.getRefreshToken({ userId, login_name }),
+            this.getAccessToken(userId),
+            this.getRefreshToken(userId),
         ]);
         return {
             accessToken,
@@ -108,15 +142,10 @@ let AuthService = class AuthService {
     async renewAccessToken({ refreshToken }) {
         try {
             console.log('@renewAccessToken, ', refreshToken);
-            const decoded = await this.verifyRefreshToken(refreshToken);
-            console.log('@renewAccessToken', decoded);
-            const user = await this.userCredentialsService.findUserById(decoded.userId);
-            if (user) {
+            const { isTokenValid, jwtClaims } = await this.verifyToken(refreshToken, 'R');
+            if (isTokenValid && jwtClaims) {
                 return {
-                    newAccessToken: await this.getAccessToken({
-                        userId: decoded.userId,
-                        login_name: decoded.login_name,
-                    }),
+                    newAccessToken: await this.getAccessToken(jwtClaims.sub),
                 };
             }
             else {

@@ -41,10 +41,7 @@ let UserCredentialsService = class UserCredentialsService {
                 login_name: email,
                 password: hashedPw,
             });
-            const tokens = await this.authService.getTokens({
-                login_name: email,
-                userId: newUser._id,
-            });
+            const tokens = await this.authService.getTokens(newUser._id);
             newUser.refreshToken = tokens.refreshToken;
             console.log('@UserCredentialsService: createUser result', newUser);
             const newUserCreated = await newUser.save();

@@ -45,6 +45,7 @@ let SignupService = class SignupService {
         };
         const newTotp = otplib_1.totp.generate(this.totpSecret);
         const mailresult = await this.mailService.sendUserConfirmation(emailToRegister, newTotp);
+        console.log('generateOtpAndSendEmail');
         return {
             code: 1,
             case: 'mail sent',

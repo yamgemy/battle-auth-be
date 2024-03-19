@@ -60,6 +60,8 @@ export class SignupService {
       newTotp,
     );
 
+    console.log('generateOtpAndSendEmail');
+
     return {
       code: 1,
       case: 'mail sent',

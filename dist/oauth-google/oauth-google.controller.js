@@ -23,7 +23,7 @@ let OauthGoogleController = class OauthGoogleController {
 };
 exports.OauthGoogleController = OauthGoogleController;
 __decorate([
-    (0, common_1.Get)('google/onCodeRetrieved'),
+    (0, common_1.Get)('onCodeRetrieved'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)

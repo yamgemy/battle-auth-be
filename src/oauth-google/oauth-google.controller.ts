@@ -5,7 +5,7 @@ import { OauthGoogleService } from './oauth-google.service';
 export class OauthGoogleController {
   constructor(private readonly oauthGoogleService: OauthGoogleService) {}
 
-  @Get('google/onCodeRetrieved')
+  @Get('onCodeRetrieved')
   async googleCodeMadeCallback(payload: any) {
     this.oauthGoogleService.something(payload);
     console.log('googleCodeMadeCallback', payload);

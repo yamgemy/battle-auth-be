@@ -17,6 +17,9 @@ const socket_module_1 = require("./socket/socket.module");
 const userCredentials_module_1 = require("./userCredentials/userCredentials.module");
 const signup_module_1 = require("./signup/signup.module");
 const mail_module_1 = require("./mail/mail.module");
+const oauth_google_controller_1 = require("./oauth-google/oauth-google.controller");
+const oauth_google_service_1 = require("./oauth-google/oauth-google.service");
+const oauth_google_module_1 = require("./oauth-google/oauth-google.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -36,9 +39,10 @@ exports.AppModule = AppModule = __decorate([
             socket_module_1.SocketModule,
             signup_module_1.SignupModule,
             mail_module_1.MailModule,
+            oauth_google_module_1.OauthGoogleModule,
         ],
-        controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService],
+        controllers: [app_controller_1.AppController, oauth_google_controller_1.OauthGoogleController],
+        providers: [app_service_1.AppService, oauth_google_service_1.OauthGoogleService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

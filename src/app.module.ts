@@ -8,6 +8,9 @@ import { SocketModule } from './socket/socket.module';
 import { UserCredentialsModule } from './userCredentials/userCredentials.module';
 import { SignupModule } from './signup/signup.module';
 import { MailModule } from './mail/mail.module';
+import { OauthGoogleController } from './oauth-google/oauth-google.controller';
+import { OauthGoogleService } from './oauth-google/oauth-google.service';
+import { OauthGoogleModule } from './oauth-google/oauth-google.module';
 
 @Module({
   imports: [
@@ -24,8 +27,9 @@ import { MailModule } from './mail/mail.module';
     SocketModule,
     SignupModule,
     MailModule,
+    OauthGoogleModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, OauthGoogleController],
+  providers: [AppService, OauthGoogleService],
 })
 export class AppModule {}

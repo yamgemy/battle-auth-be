@@ -1,0 +1,21 @@
+import { Controller, Get } from '@nestjs/common';
+import { OauthGoogleService } from './oauth-google.service';
+
+@Controller('oauth-google')
+export class OauthGoogleController {
+  constructor(private readonly oauthGoogleService: OauthGoogleService) {}
+
+  @Get('onCodeRetrieved')
+  async googleCodeMadeCallback(payload: any) {
+    this.oauthGoogleService.something(payload);
+    console.log('googleCodeMadeCallback', payload);
+  }
+
+  @Get('codeVerifierAndChallenge')
+  async codeVerifierAndChallenge() {
+    const code_verifier = this.oauthGoogleService.generateCodeVerifier();
+    const code_challenge =
+      await this.oauthGoogleService.generateCodeChallenge(code_verifier);
+    return { code_verifier, code_challenge };
+  }
+}

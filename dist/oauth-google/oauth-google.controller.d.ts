@@ -3,4 +3,8 @@ export declare class OauthGoogleController {
     private readonly oauthGoogleService;
     constructor(oauthGoogleService: OauthGoogleService);
     googleCodeMadeCallback(payload: any): Promise<void>;
+    codeVerifierAndChallenge(): Promise<{
+        code_verifier: string;
+        code_challenge: string;
+    }>;
 }

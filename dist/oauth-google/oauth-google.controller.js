@@ -20,6 +20,11 @@ let OauthGoogleController = class OauthGoogleController {
         this.oauthGoogleService.something(payload);
         console.log('googleCodeMadeCallback', payload);
     }
+    async codeVerifierAndChallenge() {
+        const code_verifier = this.oauthGoogleService.generateCodeVerifier();
+        const code_challenge = await this.oauthGoogleService.generateCodeChallenge(code_verifier);
+        return { code_verifier, code_challenge };
+    }
 };
 exports.OauthGoogleController = OauthGoogleController;
 __decorate([
@@ -28,6 +33,12 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], OauthGoogleController.prototype, "googleCodeMadeCallback", null);
+__decorate([
+    (0, common_1.Get)('codeVerifierAndChallenge'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], OauthGoogleController.prototype, "codeVerifierAndChallenge", null);
 exports.OauthGoogleController = OauthGoogleController = __decorate([
     (0, common_1.Controller)('oauth-google'),
     __metadata("design:paramtypes", [oauth_google_service_1.OauthGoogleService])

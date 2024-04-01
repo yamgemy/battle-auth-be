@@ -8,10 +8,16 @@ export class OauthGoogleController {
   constructor(private readonly oauthGoogleService: OauthGoogleService) {}
 
   @Get('onCodeRetrieved')
-  async googleCodeMadeCallback(@Req() req: Request) {
-    this.oauthGoogleService.something(req.originalUrl);
+  async googleCodeMadeCallback(@Req() req: Request, @Res() res: Response) {
+    res.redirect('battleauth://onCodeRetrieved' + req.originalUrl);
+    //this.oauthGoogleService.something(req.originalUrl);
     // const url = new URL(req.originalUrl);
-    console.log('googleCodeMadeCallback', req.originalUrl);
+    console.log('@googleCodeMadeCallback', req.originalUrl);
+    /*
+    example
+    /oauth-google/onCodeRetrieved?state=kPSLSFQ3NYFRwteeRBbFWrjLKkmyRRKo%2F&code=4%2F0AeaYSHA1EGXa3TDEnwNB2Yx0MKsRNKnOpkdfeoSDaiAq1z7OzQwPbHHUmD-hJnLhhpCCBw&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&prompt=consent
+    
+    */
   }
 
   @Get('codeVerifierAndChallenge')

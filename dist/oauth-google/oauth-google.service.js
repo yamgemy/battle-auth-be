@@ -17,7 +17,8 @@ let OauthGoogleService = class OauthGoogleService {
     generateCodeVerifier() {
         const array = new Uint8Array(32);
         c.getRandomValues(array);
-        return URLSafeBase64.encode(btoa(String.fromCharCode(...array)));
+        const buffer = Buffer.from(btoa(String.fromCharCode(...array)));
+        return URLSafeBase64.encode(buffer);
     }
     async generateCodeChallenge(verifier) {
         const buffer = Buffer.from(verifier, 'utf8');

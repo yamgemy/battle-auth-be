@@ -1,5 +1,5 @@
-import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, HttpStatus, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { ResponseWithCodeCaseContents } from 'src/declarations/http';
 import { OauthGoogleService } from './oauth-google.service';
 
@@ -8,9 +8,10 @@ export class OauthGoogleController {
   constructor(private readonly oauthGoogleService: OauthGoogleService) {}
 
   @Get('onCodeRetrieved')
-  async googleCodeMadeCallback(payload: any) {
-    this.oauthGoogleService.something(payload);
-    console.log('googleCodeMadeCallback', payload);
+  async googleCodeMadeCallback(@Req() req: Request) {
+    this.oauthGoogleService.something(req.originalUrl);
+    // const url = new URL(req.originalUrl);
+    console.log('googleCodeMadeCallback', req.originalUrl);
   }
 
   @Get('codeVerifierAndChallenge')
@@ -20,7 +21,7 @@ export class OauthGoogleController {
       await this.oauthGoogleService.generateCodeChallenge(code_verifier);
     response.status(HttpStatus.OK).json({
       code: 1,
-      case: '',
+      case: 'code verifier and challenge made',
       contents: {
         code_verifier,
         code_challenge,

@@ -11,8 +11,9 @@ export class OauthGoogleService {
     const array = new Uint8Array(32); // Create a byte array of length 32
     c.getRandomValues(array); // Fill the array with random values
 
+    const buffer = Buffer.from(btoa(String.fromCharCode(...array)));
     // Base64 encode the array with URL and padding safe characters
-    return URLSafeBase64.encode(btoa(String.fromCharCode(...array)));
+    return URLSafeBase64.encode(buffer);
   }
 
   async generateCodeChallenge(verifier: string): Promise<string> {

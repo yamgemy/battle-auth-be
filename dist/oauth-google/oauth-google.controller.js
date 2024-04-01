@@ -19,16 +19,16 @@ let OauthGoogleController = class OauthGoogleController {
     constructor(oauthGoogleService) {
         this.oauthGoogleService = oauthGoogleService;
     }
-    async googleCodeMadeCallback(payload) {
-        this.oauthGoogleService.something(payload);
-        console.log('googleCodeMadeCallback', payload);
+    async googleCodeMadeCallback(req) {
+        this.oauthGoogleService.something(req.originalUrl);
+        console.log('googleCodeMadeCallback', req.originalUrl);
     }
     async codeVerifierAndChallenge(response) {
         const code_verifier = this.oauthGoogleService.generateCodeVerifier();
         const code_challenge = await this.oauthGoogleService.generateCodeChallenge(code_verifier);
         response.status(common_1.HttpStatus.OK).json({
             code: 1,
-            case: '',
+            case: 'code verifier and challenge made',
             contents: {
                 code_verifier,
                 code_challenge,
@@ -39,6 +39,7 @@ let OauthGoogleController = class OauthGoogleController {
 exports.OauthGoogleController = OauthGoogleController;
 __decorate([
     (0, common_1.Get)('onCodeRetrieved'),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)

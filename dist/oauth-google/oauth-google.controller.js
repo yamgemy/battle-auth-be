@@ -19,9 +19,9 @@ let OauthGoogleController = class OauthGoogleController {
     constructor(oauthGoogleService) {
         this.oauthGoogleService = oauthGoogleService;
     }
-    async googleCodeMadeCallback(req) {
-        this.oauthGoogleService.something(req.originalUrl);
-        console.log('googleCodeMadeCallback', req.originalUrl);
+    async googleCodeMadeCallback(req, res) {
+        res.redirect('battleauth://onCodeRetrieved' + req.originalUrl);
+        console.log('@googleCodeMadeCallback', req.originalUrl);
     }
     async codeVerifierAndChallenge(response) {
         const code_verifier = this.oauthGoogleService.generateCodeVerifier();
@@ -40,8 +40,9 @@ exports.OauthGoogleController = OauthGoogleController;
 __decorate([
     (0, common_1.Get)('onCodeRetrieved'),
     __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], OauthGoogleController.prototype, "googleCodeMadeCallback", null);
 __decorate([

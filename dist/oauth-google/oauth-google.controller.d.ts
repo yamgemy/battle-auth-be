@@ -3,6 +3,6 @@ import { OauthGoogleService } from './oauth-google.service';
 export declare class OauthGoogleController {
     private readonly oauthGoogleService;
     constructor(oauthGoogleService: OauthGoogleService);
-    googleCodeMadeCallback(req: Request): Promise<void>;
+    googleCodeMadeCallback(req: Request, res: Response): Promise<void>;
     codeVerifierAndChallenge(response: Response): Promise<void>;
 }

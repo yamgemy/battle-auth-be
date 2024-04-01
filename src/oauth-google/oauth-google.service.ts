@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { getRandomValues, subtle } from 'crypto';
-
+import * as c from 'crypto';
+import * as URLSafeBase64 from 'urlsafe-base64';
 @Injectable()
 export class OauthGoogleService {
   async something(payload: any) {
@@ -9,21 +9,18 @@ export class OauthGoogleService {
 
   generateCodeVerifier(): string {
     const array = new Uint8Array(32); // Create a byte array of length 32
-    getRandomValues(array); // Fill the array with random values
+    c.getRandomValues(array); // Fill the array with random values
 
     // Base64 encode the array with URL and padding safe characters
-    return btoa(String.fromCharCode(...array)).replace(
-      /[+\/=]/g,
-      (char) => ({ '+': '-', '/': '_', '=': '' })[char],
-    );
+    return URLSafeBase64.encode(btoa(String.fromCharCode(...array)));
   }
 
   async generateCodeChallenge(verifier: string): Promise<string> {
-    const buffer = new TextEncoder().encode(verifier); // Convert verifier to buffer
-    const hashBuffer = await subtle.digest('SHA-256', buffer); // Hash the buffer using SHA-256
-    const challenge = btoa(
-      String.fromCharCode(...new Uint8Array(hashBuffer)),
-    ).replace(/[+\/=]/g, (char) => ({ '+': '-', '/': '_', '=': '' })[char]);
-    return challenge;
+    const buffer = Buffer.from(verifier, 'utf8');
+
+    // Hash the buffer using SHA-256:
+    const hashBuffer = c.createHash('sha256').update(buffer).digest();
+
+    return URLSafeBase64.encode(hashBuffer);
   }
 }

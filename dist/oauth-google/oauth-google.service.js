@@ -8,21 +8,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OauthGoogleService = void 0;
 const common_1 = require("@nestjs/common");
-const crypto_1 = require("crypto");
+const c = require("crypto");
+const URLSafeBase64 = require("urlsafe-base64");
 let OauthGoogleService = class OauthGoogleService {
     async something(payload) {
         console.log('@OauthGoogleService something ', payload);
     }
     generateCodeVerifier() {
         const array = new Uint8Array(32);
-        (0, crypto_1.getRandomValues)(array);
-        return btoa(String.fromCharCode(...array)).replace(/[+\/=]/g, (char) => ({ '+': '-', '/': '_', '=': '' })[char]);
+        c.getRandomValues(array);
+        return URLSafeBase64.encode(btoa(String.fromCharCode(...array)));
     }
     async generateCodeChallenge(verifier) {
-        const buffer = new TextEncoder().encode(verifier);
-        const hashBuffer = await crypto_1.subtle.digest('SHA-256', buffer);
-        const challenge = btoa(String.fromCharCode(...new Uint8Array(hashBuffer))).replace(/[+\/=]/g, (char) => ({ '+': '-', '/': '_', '=': '' })[char]);
-        return challenge;
+        const buffer = Buffer.from(verifier, 'utf8');
+        const hashBuffer = c.createHash('sha256').update(buffer).digest();
+        return URLSafeBase64.encode(hashBuffer);
     }
 };
 exports.OauthGoogleService = OauthGoogleService;

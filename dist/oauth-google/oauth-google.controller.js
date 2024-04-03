@@ -13,11 +13,16 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OauthGoogleController = void 0;
+const axios_1 = require("@nestjs/axios");
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
+const rxjs_1 = require("rxjs");
 const oauth_google_service_1 = require("./oauth-google.service");
 let OauthGoogleController = class OauthGoogleController {
-    constructor(oauthGoogleService) {
+    constructor(configService, oauthGoogleService, httpService) {
+        this.configService = configService;
         this.oauthGoogleService = oauthGoogleService;
+        this.httpService = httpService;
     }
     async googleCodeMadeCallback(req, res) {
         res.redirect('battleauth://onCodeRetrieved' + req.originalUrl);
@@ -33,6 +38,22 @@ let OauthGoogleController = class OauthGoogleController {
                 code_verifier,
                 code_challenge,
             },
+        });
+    }
+    async getGoogleAccessToken(data, response) {
+        const client_secret = this.configService.get('GOOGLE_OAUTH_CLIENT_SECRET');
+        const postObservable = this.httpService
+            .post('https://accounts.google.com/o/oauth2/token', {
+            ...data,
+            client_secret,
+        }, { headers: { 'Content-type': 'application/x-www-form-urlencoded' } })
+            .pipe((0, rxjs_1.map)((res) => res.data));
+        const googleResponse = await (0, rxjs_1.lastValueFrom)(postObservable);
+        console.log('@getGoogleAccessToken', googleResponse);
+        response.status(common_1.HttpStatus.OK).json({
+            code: 1,
+            case: 'access token returned from google',
+            contents: googleResponse,
         });
     }
 };
@@ -52,8 +73,18 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], OauthGoogleController.prototype, "codeVerifierAndChallenge", null);
+__decorate([
+    (0, common_1.Post)('accessToken'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], OauthGoogleController.prototype, "getGoogleAccessToken", null);
 exports.OauthGoogleController = OauthGoogleController = __decorate([
     (0, common_1.Controller)('oauth-google'),
-    __metadata("design:paramtypes", [oauth_google_service_1.OauthGoogleService])
+    __metadata("design:paramtypes", [config_1.ConfigService,
+        oauth_google_service_1.OauthGoogleService,
+        axios_1.HttpService])
 ], OauthGoogleController);
 //# sourceMappingURL=oauth-google.controller.js.map

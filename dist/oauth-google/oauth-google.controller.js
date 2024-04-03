@@ -42,19 +42,24 @@ let OauthGoogleController = class OauthGoogleController {
     }
     async getGoogleAccessToken(data, response) {
         const client_secret = this.configService.get('GOOGLE_OAUTH_CLIENT_SECRET');
-        const postObservable = this.httpService
-            .post('https://accounts.google.com/o/oauth2/token', {
-            ...data,
-            client_secret,
-        }, { headers: { 'Content-type': 'application/x-www-form-urlencoded' } })
-            .pipe((0, rxjs_1.map)((res) => res.data));
-        const googleResponse = await (0, rxjs_1.lastValueFrom)(postObservable);
-        console.log('@getGoogleAccessToken', googleResponse);
-        response.status(common_1.HttpStatus.OK).json({
-            code: 1,
-            case: 'access token returned from google',
-            contents: googleResponse,
-        });
+        try {
+            const postObservable = this.httpService
+                .post('https://oauth2.googleapis.com/token', {
+                ...data,
+                client_secret,
+            }, { headers: { 'Content-type': 'application/x-www-form-urlencoded' } })
+                .pipe((0, rxjs_1.map)((res) => res.data));
+            const googleResponse = await (0, rxjs_1.lastValueFrom)(postObservable);
+            googleResponse &&
+                response.status(common_1.HttpStatus.OK).json({
+                    code: 1,
+                    case: 'access token returned from google',
+                    contents: googleResponse,
+                });
+        }
+        catch (e) {
+            console.log('@getGoogleAccessToken error', e);
+        }
     }
 };
 exports.OauthGoogleController = OauthGoogleController;

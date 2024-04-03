@@ -1,11 +1,26 @@
-import { Controller, Get, HttpStatus, Req, Res } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
+import { lastValueFrom, map } from 'rxjs';
 import { ResponseWithCodeCaseContents } from 'src/declarations/http';
 import { OauthGoogleService } from './oauth-google.service';
 
 @Controller('oauth-google')
 export class OauthGoogleController {
-  constructor(private readonly oauthGoogleService: OauthGoogleService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly oauthGoogleService: OauthGoogleService,
+    private readonly httpService: HttpService,
+  ) {}
 
   @Get('onCodeRetrieved')
   async googleCodeMadeCallback(@Req() req: Request, @Res() res: Response) {
@@ -33,5 +48,30 @@ export class OauthGoogleController {
         code_challenge,
       },
     } as ResponseWithCodeCaseContents<Record<string, string>>);
+  }
+
+  @Post('accessToken')
+  async getGoogleAccessToken(@Body() data: any, @Res() response: Response) {
+    const client_secret = this.configService.get<string>(
+      'GOOGLE_OAUTH_CLIENT_SECRET',
+    );
+    const postObservable = this.httpService
+      .post(
+        'https://accounts.google.com/o/oauth2/token',
+        {
+          ...data,
+          client_secret,
+        },
+        { headers: { 'Content-type': 'application/x-www-form-urlencoded' } },
+      )
+      .pipe(map((res) => res.data));
+
+    const googleResponse = await lastValueFrom(postObservable);
+    console.log('@getGoogleAccessToken', googleResponse);
+    response.status(HttpStatus.OK).json({
+      code: 1,
+      case: 'access token returned from google',
+      contents: googleResponse,
+    } as ResponseWithCodeCaseContents<unknown>);
   }
 }

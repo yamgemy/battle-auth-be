@@ -16,7 +16,7 @@ exports.OauthGoogleModule = OauthGoogleModule;
 exports.OauthGoogleModule = OauthGoogleModule = __decorate([
     (0, common_1.Module)({
         controllers: [oauth_google_controller_1.OauthGoogleController],
-        providers: [oauth_google_service_1.OauthGoogleService],
+        providers: [oauth_google_service_1.OauthGoogleService, HttpService],
     })
 ], OauthGoogleModule);
 //# sourceMappingURL=oauth-google.module.js.map

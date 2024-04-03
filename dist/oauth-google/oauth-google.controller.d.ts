@@ -5,4 +5,5 @@ export declare class OauthGoogleController {
     constructor(oauthGoogleService: OauthGoogleService);
     googleCodeMadeCallback(req: Request, res: Response): Promise<void>;
     codeVerifierAndChallenge(response: Response): Promise<void>;
+    getGoogleAccessToken(): Promise<void>;
 }

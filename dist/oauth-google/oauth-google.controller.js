@@ -35,6 +35,9 @@ let OauthGoogleController = class OauthGoogleController {
             },
         });
     }
+    async getGoogleAccessToken() {
+        this.httpService;
+    }
 };
 exports.OauthGoogleController = OauthGoogleController;
 __decorate([
@@ -52,6 +55,12 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], OauthGoogleController.prototype, "codeVerifierAndChallenge", null);
+__decorate([
+    (0, common_1.Post)('accessToken'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], OauthGoogleController.prototype, "getGoogleAccessToken", null);
 exports.OauthGoogleController = OauthGoogleController = __decorate([
     (0, common_1.Controller)('oauth-google'),
     __metadata("design:paramtypes", [oauth_google_service_1.OauthGoogleService])

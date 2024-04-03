@@ -7,7 +7,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OauthGoogleModule = void 0;
+const axios_1 = require("@nestjs/axios");
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const oauth_google_controller_1 = require("./oauth-google.controller");
 const oauth_google_service_1 = require("./oauth-google.service");
 let OauthGoogleModule = class OauthGoogleModule {
@@ -15,8 +17,9 @@ let OauthGoogleModule = class OauthGoogleModule {
 exports.OauthGoogleModule = OauthGoogleModule;
 exports.OauthGoogleModule = OauthGoogleModule = __decorate([
     (0, common_1.Module)({
+        imports: [config_1.ConfigModule, axios_1.HttpModule],
         controllers: [oauth_google_controller_1.OauthGoogleController],
-        providers: [oauth_google_service_1.OauthGoogleService, HttpService],
+        providers: [oauth_google_service_1.OauthGoogleService],
     })
 ], OauthGoogleModule);
 //# sourceMappingURL=oauth-google.module.js.map

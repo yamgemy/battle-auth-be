@@ -1,16 +1,17 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { SocketModule } from './socket/socket.module';
-import { UserCredentialsModule } from './userCredentials/userCredentials.module';
-import { SignupModule } from './signup/signup.module';
 import { MailModule } from './mail/mail.module';
 import { OauthGoogleController } from './oauth-google/oauth-google.controller';
-import { OauthGoogleService } from './oauth-google/oauth-google.service';
 import { OauthGoogleModule } from './oauth-google/oauth-google.module';
+import { OauthGoogleService } from './oauth-google/oauth-google.service';
+import { SignupModule } from './signup/signup.module';
+import { SocketModule } from './socket/socket.module';
+import { UserCredentialsModule } from './userCredentials/userCredentials.module';
 
 @Module({
   imports: [
@@ -28,8 +29,10 @@ import { OauthGoogleModule } from './oauth-google/oauth-google.module';
     SignupModule,
     MailModule,
     OauthGoogleModule,
+    HttpModule.register({}),
   ],
   controllers: [AppController, OauthGoogleController],
   providers: [AppService, OauthGoogleService],
+  exports: [HttpModule],
 })
 export class AppModule {}

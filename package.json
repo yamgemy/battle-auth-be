@@ -34,6 +34,7 @@
     "@nestjs/platform-socket.io": "^10.3.3",
     "@nestjs/websockets": "^10.3.3",
     "argon2": "^0.31.2",
+    "axios": "^1.6.8",
     "btoa": "^1.2.1",
     "handlebars": "^4.7.8",
     "mongoose": "^8.1.3",
